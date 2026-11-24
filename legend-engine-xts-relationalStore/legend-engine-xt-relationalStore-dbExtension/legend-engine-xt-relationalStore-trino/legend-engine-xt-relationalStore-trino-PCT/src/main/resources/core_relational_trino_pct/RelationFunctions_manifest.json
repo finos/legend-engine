@@ -373,9 +373,6 @@
     "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
     "expectedError" : "Column ''monday__|__newcol'' cannot be resolved"
   }, {
-    "test" : "meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: insert into leSchema"
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: insert into leSchema"
   }, {
@@ -453,9 +450,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: Trino"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"

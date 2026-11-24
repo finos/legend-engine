@@ -66,7 +66,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRename::testChainedRenam
    assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertSameSQL('select "persontable_0"."first" as "first", "persontable_0"."Other" as "other" from (select "subselect"."first" as "first", "subselect"."Other" as "Other" from (select top 10 "persontable_2"."firstName" as "first", "persontable_2"."hello" as "Other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_2") as "subselect") as "persontable_0"',
+   assertSameSQL('select top 10 "persontable_2"."firstName" as "first", "persontable_2"."hello" as "other" from (select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root") as "persontable_2"',
       $result->sqlRemoveFormatting());
 }
 
@@ -113,7 +113,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRename::testRenameColumn
    assertEquals('Anthony,Anthony,David,David,Fabrice,Fabrice,John,John,John,John,Oliver,Oliver,Peter,Peter',
       $result.values->sort(asc('First Name')).rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertSameSQL('select "unionalias_0"."firstName" as "First Name" from (select "unionalias_1"."firstName" as "firstName" from (select "root".FIRSTNAME as "firstName" from personTable as "root" union all select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1") as "unionalias_0"',
+   assertSameSQL('select "unionalias_1"."firstName" as "First Name" from (select "root".FIRSTNAME as "firstName" from personTable as "root" union all select "root".FIRSTNAME as "firstName" from personTable as "root") as "unionalias_1"',
       $result->sqlRemoveFormatting());
 }
 
@@ -134,7 +134,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRename::testRenameColumn
 
    let resWithoutQuotes = execute($queryWithoutQuotes, $mapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   let expected = 'select "tablewithquotedcolumns_0"."FIRST NAME" as "firstName", "tablewithquotedcolumns_0"."LAST NAME" as "LAST NAME", "tablewithquotedcolumns_0"."1columnStartsWithNumber" as "1columnStartsWithNumber" from (select "root"."FIRST NAME" as "FIRST NAME", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root") as "tablewithquotedcolumns_0"';
+   let expected = 'select "root"."FIRST NAME" as "firstName", "root"."LAST NAME" as "LAST NAME", "root"."1columnStartsWithNumber" as "1columnStartsWithNumber" from tableWithQuotedColumns as "root"';
 
    assertSameSQL($expected, $resWithoutQuotes->sqlRemoveFormatting());
    assertEquals(['firstName', 'LAST NAME', '1columnStartsWithNumber'], $resWithoutQuotes.values.columns.name);

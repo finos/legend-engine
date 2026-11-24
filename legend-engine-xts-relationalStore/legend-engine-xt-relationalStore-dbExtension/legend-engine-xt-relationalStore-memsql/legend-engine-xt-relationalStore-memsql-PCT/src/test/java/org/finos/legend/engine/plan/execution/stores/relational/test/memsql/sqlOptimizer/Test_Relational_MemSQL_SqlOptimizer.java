@@ -1,0 +1,116 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.plan.execution.stores.relational.test.memsql.sqlOptimizer;
+
+import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
+import java.util.Map;
+import junit.framework.Test;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.test.shared.framework.TestServerResource;
+import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
+import org.finos.legend.pure.m3.execution.test.TestCollection;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
+
+public class Test_Relational_MemSQL_SqlOptimizer
+{
+    public static Test suite()
+    {
+        String testPackage = "meta::relational::tests::pct::memsql::sqlOptimizer";
+        CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
+
+        // Fully-qualified Pure test -> a substring that must appear in its failure.
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
+                // The dialect's SQL printer has no lateral join, so the query under test cannot be printed.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadOnlyByALateralSibling_Connection_1__Boolean_1_",
+                        "Lateral operation not supported")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::mappings::testEveryFeatureKeepsLateralRelationQueriesRunnable_Connection_1__Boolean_1_",
+                        "Lateral operation not supported")
+                // MemSQL compares column names case-insensitively, so the input's "v" and "V" are the same column name.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::elimination::testEliminationLeavesASubSelectWhoseNamesDifferOnlyInCase_Connection_1__Boolean_1_",
+                        "Duplicate column name 'V'")
+                // SingleStore rejects a derived table that reads an outer column outside a lateral join, as in the input query.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::trimming::testEveryRuleKeepsAColumnReadFromAFromSubSelectNestedInExists_Connection_1__Boolean_1_",
+                        "non-rewritable derived table not under LATERAL JOIN has dependent fields")
+                // The PCT fixture tables are temporary tables, which MemSQL refuses inside a CTE, so the CTE extraction rule's
+                // own query cannot run here.
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::ruleSupport::testEverySupportedRuleRewritesAQueryWithoutChangingItsRows_Connection_1__Boolean_1_",
+                        "cannot appear in the definition of common table expression")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfAViewKeepsTheFilterPushedIntoIt_Connection_1__Boolean_1_",
+                        "cannot appear in the definition of common table expression")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfASubQueryFromOperations_Connection_1__Boolean_1_",
+                        "cannot appear in the definition of common table expression")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfNestedSubQueries_Connection_1__Boolean_1_",
+                        "cannot appear in the definition of common table expression")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfTwoJoinedSubQueries_Connection_1__Boolean_1_",
+                        "cannot appear in the definition of common table expression")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfALimitedSubQueryJoinedToAnother_Connection_1__Boolean_1_",
+                        "cannot appear in the definition of common table expression")
+                .withKeyValue("meta::relational::tests::sqlOptimizer::semantics::cteExtraction::testCTEExtractionOfAnIsolatedQualifiedPropertyJoin_Connection_1__Boolean_1_",
+                        "cannot appear in the definition of common table expression");
+
+        Map<CoreInstance, String> failures = pathToReason.collect(
+                (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
+
+        PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
+        {
+            Object result;
+            try
+            {
+                result = PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
+            }
+            // Throwable rather than Exception: a wrong-result test fails with an AssertionError.
+            catch (Throwable e)
+            {
+                String reason = failures.get(test);
+                if (reason != null)
+                {
+                    if (e.getMessage() == null || !e.getMessage().contains(reason))
+                    {
+                        throw new AssertionError("Expect failure to contains: " + reason, e);
+                    }
+                    return true;
+                }
+                throw e;
+            }
+            if (failures.containsKey(test))
+            {
+                throw new AssertionError("Expected this test to fail with: " + failures.get(test) + ", but it passed. Remove the entry.");
+            }
+            return result;
+        };
+
+        return wrapSuite(
+                () -> true,
+                () -> PureTestBuilder.buildSuite(
+                        TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(),
+                                fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport),
+                                ci -> PureTestBuilder.satisfiesConditions(ci, executionSupport.getProcessorSupport())
+                        ),
+                        executor,
+                        executionSupport
+                ),
+                () -> false,
+                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.MemSQL).getFirst())
+        );
+    }
+}

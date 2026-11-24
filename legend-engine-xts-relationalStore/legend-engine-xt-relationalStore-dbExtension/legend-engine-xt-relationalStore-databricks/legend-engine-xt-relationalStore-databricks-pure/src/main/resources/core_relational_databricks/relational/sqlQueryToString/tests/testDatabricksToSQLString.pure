@@ -343,6 +343,15 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
   assertSameSQL('CREATE OR REPLACE FUNCTION `test_schema`.`join_on_param_func`(threshold INT) \nRETURNS TABLE(firstName STRING, age INT, age2 INT) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT threshold AS param_threshold) \nselect `persontable_0`.`firstName` as `firstName`, `persontable_0`.`age` as `age`, `persontable_0`.`age2` as `age2` from (select * from (select `root`.FIRSTNAME as `firstName`, `root`.AGE as `age` from personTable as `root`) as `persontable_1` inner join (select `root`.AGE as `age2` from personTable as `root` where `root`.AGE > (SELECT param_threshold FROM func_param_table)) as `persontable_3` on ((`persontable_1`.`age` = `persontable_3`.`age2` and `persontable_3`.`age2` > threshold))) as `persontable_0`;', $ddl);
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testActivationJoinConditionCollectionParameterIsPushedIntoTheJoinedSubQuery():Boolean[1]
+{
+  let sql = databricksActivationSql({ids:Integer[*]|
+    Person.all()->project([col(p:Person[1]|$p.firstName, 'firstName'), col(p:Person[1]|$p.age, 'age')])
+                ->join(Person.all()->project([col(p:Person[1]|$p.age, 'age2')]), meta::relational::metamodel::join::JoinType.INNER,
+                       {a,b|($a.getInteger('age') == $b.getInteger('age2')) && $b.getInteger('age2')->in($ids)})});
+  assertSameSQL('select `persontable_0`.`firstName` as `firstName`, `persontable_0`.`age` as `age`, `persontable_0`.`age2` as `age2` from (select * from (select `root`.FIRSTNAME as `firstName`, `root`.AGE as `age` from personTable as `root`) as `persontable_1` inner join (select `root`.AGE as `age2` from personTable as `root` where `root`.AGE in (select `root`.value from (select `col` as `VALUE` from (select explode_outer(param_ids) from func_param_table)) as `root`)) as `persontable_3` on ((`persontable_1`.`age` = `persontable_3`.`age2` and `persontable_3`.`age2` in (select `root`.value from (select `col` as `VALUE` from (select explode_outer(param_ids) from func_param_table)) as `root`)))) as `persontable_0`', $sql);
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testJoinStringsGroupByDatabricks():Boolean[1]
 {
   let sql = toSQLString(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName->joinStrings('*')], ['legalName', 'employees']),

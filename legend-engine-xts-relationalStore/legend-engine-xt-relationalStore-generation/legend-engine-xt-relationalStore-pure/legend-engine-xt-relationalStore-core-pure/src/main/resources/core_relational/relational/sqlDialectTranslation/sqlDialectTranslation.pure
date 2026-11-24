@@ -121,8 +121,9 @@ function meta::relational::functions::sqlDialectTranslation::relOpToString(r:Rel
   // Conversion is dialect-agnostic -- it produces a Postgres-spec AST. Null ordering is realised per
   // dialect during rendering below, off $config.dbConfig.
   let node = $r->convertRelationalOperationElement($extensions);
+  // Outside legacy SQL post-processing, the relational SQL optimizer stage has optimized the query before printing.
   let optimizedNode = if($shouldOptimize && $node->instanceOf(Query),
-    | $node->cast(@Query)->planSqlStatement(^SqlPlanningConfig(dbType = $dbType->toString()), $extensions),
+    | $node->cast(@Query)->meta::relational::postProcessor::legacy::planSqlStatementIfLegacy($dbType, $extensions),
     | $node
   );
   $optimizedNode->generateSqlDialect($config, $extensions);

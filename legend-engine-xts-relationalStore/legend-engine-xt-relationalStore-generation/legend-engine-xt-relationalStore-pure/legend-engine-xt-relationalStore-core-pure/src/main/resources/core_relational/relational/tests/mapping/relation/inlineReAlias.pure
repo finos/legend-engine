@@ -112,7 +112,7 @@ function <<access.private>> meta::relational::tests::mapping::relation::inlineRe
 function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testConstantPropertyProjectedUnderDifferentAlias():Boolean[1]
 {
   assertSameSQL(
-    'select null as "sd", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    'select null as "sd", "ra_rule_1".HAIRCUT as "haircut" from RA_RULE as "ra_rule_1"',
     reAliasSql(ConstantMapping, 'sd')
   );
 }
@@ -120,7 +120,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias
 function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testConstantPropertyProjectedUnderPhysicalColumnName():Boolean[1]
 {
   assertSameSQL(
-    'select null as "startDate", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    'select null as "startDate", "ra_rule_1".HAIRCUT as "haircut" from RA_RULE as "ra_rule_1"',
     reAliasSql(ConstantMapping, 'startDate')
   );
 }
@@ -128,7 +128,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias
 function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testComputedPropertyProjectedUnderDifferentAlias():Boolean[1]
 {
   assertSameSQL(
-    'select case when "ra_rule_0".HAIRCUT is not null and "ra_rule_0".HAIRCUT > cast(100.0 as float) then "ra_rule_0".endDate else null end as "sd", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    'select case when "ra_rule_1".HAIRCUT is not null and "ra_rule_1".HAIRCUT > cast(100.0 as float) then "ra_rule_1".endDate else null end as "sd", "ra_rule_1".HAIRCUT as "haircut" from RA_RULE as "ra_rule_1"',
     reAliasSql(ComputedMapping, 'sd')
   );
 }
@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias
 function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testComputedPropertyProjectedUnderPhysicalColumnName():Boolean[1]
 {
   assertSameSQL(
-    'select case when "ra_rule_0".HAIRCUT is not null and "ra_rule_0".HAIRCUT > cast(100.0 as float) then "ra_rule_0".endDate else null end as "startDate", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    'select case when "ra_rule_1".HAIRCUT is not null and "ra_rule_1".HAIRCUT > cast(100.0 as float) then "ra_rule_1".endDate else null end as "startDate", "ra_rule_1".HAIRCUT as "haircut" from RA_RULE as "ra_rule_1"',
     reAliasSql(ComputedMapping, 'startDate')
   );
 }
@@ -144,7 +144,7 @@ function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias
 function <<test.Test>> meta::relational::tests::mapping::relation::inlineReAlias::testPlainPropertyProjectedUnderPhysicalColumnName():Boolean[1]
 {
   assertSameSQL(
-    'select "ra_rule_0".startDate as "startDate", "ra_rule_0".HAIRCUT as "haircut" from (select "ra_rule_1".ID as ID, "ra_rule_1".startDate as startDate, "ra_rule_1".endDate as endDate, "ra_rule_1".HAIRCUT as HAIRCUT from RA_RULE as "ra_rule_1") as "ra_rule_0"',
+    'select "ra_rule_1".startDate as "startDate", "ra_rule_1".HAIRCUT as "haircut" from RA_RULE as "ra_rule_1"',
     reAliasSql(PlainMapping, 'startDate')
   );
 }

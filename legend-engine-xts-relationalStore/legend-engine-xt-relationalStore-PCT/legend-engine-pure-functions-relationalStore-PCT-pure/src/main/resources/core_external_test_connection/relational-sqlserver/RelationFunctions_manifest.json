@@ -109,12 +109,6 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Sort_Extend_Select_Function_1__Boolean_1_",
-    "expectedError" : "The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Sort_Project_Function_1__Boolean_1_",
-    "expectedError" : "The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
-  }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
@@ -126,12 +120,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedRelations_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::concatenate::testSortOfConcatenateOfSortedRelations_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
   }, {
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "Unused format args. [2] arguments provided to expression \"round(%s, 0)"
@@ -643,9 +631,6 @@
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
     "expectedError" : "Window frame with ROWS or RANGE must have an ORDER BY clause."
   }, {
-    "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
-  }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
@@ -690,12 +675,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyLast_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,value,runningTotal\\n   1,10,10\\n   2,20,30\\n   3,30,60\\n   null,40,100\\n#'\nactual:   '#TDS\\n   id,value,runningTotal\\n   1,10,50\\n   2,20,70\\n   3,30,100\\n   null,40,40\\n#'"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::unionAll::testUnionAllOfSortedRelations_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::unionAll::testSortOfUnionAllOfSortedRelations_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The ORDER BY clause is invalid in views, inline functions, derived tables, subqueries, and common table expressions, unless TOP, OFFSET or FOR XML is also specified."
   }, {
     "test" : "meta::pure::functions::relation::tests::generateSeries::testGenerateSeries_Empty_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] generateSeries is not supported for Database Type: SqlServer"

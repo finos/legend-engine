@@ -1,0 +1,174 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::sqlOptimizer::tree::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+
+function meta::relational::sqlOptimizer::rules::unusedColumnTrimmingRule():SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'UnusedColumnTrimming',
+    featureName = 'UNUSED_COLUMN_TRIMMING',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {query:SelectSQLQuery[1], ctx:SqlOptimizerContext[1] | $query->trimUnusedColumns()}
+  )
+}
+
+function meta::relational::sqlOptimizer::rules::trimUnusedColumns(query:SelectSQLQuery[1]):OptimizedQuery[1]
+{
+  let trimmed = $query->transformIfChanged({r:RelationalOperationElement[1] |
+    $r->match([
+      s:SelectSQLQuery[1] | $s->trimColumnsOfSubSelects(),
+      a:RelationalOperationElement[1] | $a
+    ])
+  })->cast(@SelectSQLQuery);
+  $trimmed->changedIfNotSame($query, | $trimmed->selectedColumnCount() < $query->selectedColumnCount());
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::selectedColumnCount(query:SelectSQLQuery[1]):Integer[1]
+{
+  $query->extractRelationalElements(true).elements->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)->map(s | $s.columns->size())->sum()
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::trimColumnsOfSubSelects(select:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  if($select.data->map(d | $d->allNodes())->exists(n | $n.alias.relationalElement->instanceOf(SelectSQLQuery) || $n.alias.relationalElement->instanceOf(UnionAll)),
+    | $select->trimColumnsOfSubSelectsInTree(),
+    | $select
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::trimColumnsOfSubSelectsInTree(select:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+  let references = $select->extractRelationalElements(false);
+  let deepReferences = $select->extractRelationalElements(true);
+  if($select.data->isEmpty() || $select.columns->isEmpty() || $select.pivot->isNotEmpty() || !$references.noUnknownElement || !$deepReferences.noUnknownElement,
+    | $select,
+    | let allReferences = $references.elements->concatenate($deepReferences.elements->filter(e | $e->instanceOf(TableAliasColumn) || $e->instanceOf(TableAliasColumnName) || $e->instanceOf(ColumnName)));
+      let unqualifiedNames = $allReferences->filter(e | $e->instanceOf(ColumnName))->cast(@ColumnName).name->map(n | $n->keepKey());
+      let data = $select.data->toOne()->trimSubSelectsInTree($allReferences, $unqualifiedNames);
+      if(is($data, $select.data->toOne()),
+        | $select,
+        | let trimmed = ^$select(data = $data->cast(@RootJoinTreeNode));
+          if($select.leftSideOfFilter->isNotEmpty(),
+            | ^$trimmed(leftSideOfFilter = $select.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($select.data->toOne(), $trimmed.data->toOne())),
+            | $trimmed
+          );
+      );
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::trimSubSelectsInTree(node:RelationalTreeNode[1], references:RelationalOperationElement[*], unqualifiedNames:String[*]):RelationalTreeNode[1]
+{
+  let alias = $node.alias;
+  let trimmedElement = $alias.relationalElement->match([
+    s:SelectSQLQuery[1] | $s->keepReferencedColumns($alias->referencedColumnNames($references)->concatenate($unqualifiedNames)),
+    u:UnionAll[1] | $u->keepReferencedPositions($alias->referencedColumnNames($references)->concatenate($unqualifiedNames)),
+    a:Any[1] | $alias.relationalElement
+  ]);
+  let trimmedAlias = if(is($trimmedElement, $alias.relationalElement), | $alias, | ^$alias(relationalElement = $trimmedElement));
+  let trimmedChildren = $node.childrenData->cast(@JoinTreeNode)->mapOnce(c | $c->trimSubSelectsInTree($references, $unqualifiedNames));
+  if(is($trimmedAlias, $alias) && $trimmedChildren->sameElements($node.childrenData), | $node, | $node->match([
+    j:JoinTreeNode[1] | let join = $j.join;
+                        ^$j(
+                          alias = $trimmedAlias,
+                          join = ^$join(target = $join.target->map(t | if($t == $alias, | $trimmedAlias, | $t))),
+                          childrenData = $trimmedChildren
+                        );,
+    r:RelationalTreeNode[1] | ^$r(alias = $trimmedAlias, childrenData = $trimmedChildren)
+  ]));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::referencedColumnNames(alias:TableAlias[1], references:RelationalOperationElement[*]):String[*]
+{
+  $references->map(r | $r->match([
+    t:TableAliasColumn[1] | if($t.alias.name == $alias.name, | $t.column.name->concatenate($t.columnName), | []),
+    t:TableAliasColumnName[1] | if($t.alias.name == $alias.name, | $t.columnName, | []),
+    a:Any[1] | []
+  ]))->map(n | $n->keepKey())
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::keepReferencedColumns(select:SelectSQLQuery[1], referencedNames:String[*]):SelectSQLQuery[1]
+{
+  let ownClauses = $select->ownClauseElements();
+  if(($select.distinct == true) || $select->instanceOf(VarSetPlaceHolder) || $select->instanceOf(RelationDataSelectSqlQuery) || !$ownClauses.noUnknownElement || $select->definesCardinality() || $select->hasOrdinal(),
+    | $select,
+    | let selfReferencedNames = $ownClauses.elements->map(e | $e->match([c:ColumnName[1] | $c.name, a:Alias[1] | $a.name, a:Any[1] | []]))->map(n | $n->keepKey());
+      let kept = $select.columns->filter(c | $c->outputNames()->isEmpty() || $c->outputNames()->exists(n | $n->keepKey()->in($referencedNames->concatenate($selfReferencedNames))));
+      let columns = if($kept->isEmpty(), | $select.columns->first(), | $kept);
+      if($columns->size() == $select.columns->size(),
+        | $select,
+        | $select->match([
+            t:TdsSelectSqlQuery[1] | ^$t(columns = $columns, paths = $t.paths->filter(p | $p.first->columnKey()->in($columns->map(c | $c->outputName())->map(n | $n->columnKey())))),
+            s:SelectSQLQuery[1] | ^$s(columns = $columns)
+          ])
+      );
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::keepReferencedPositions(union:UnionAll[1], referencedNames:String[*]):UnionAll[1]
+{
+  let branches = $union.queries;
+  let width = if($branches->isEmpty(), | 0, | $branches->at(0).columns->size());
+  let ownClauses = $branches->map(b | $b->ownClauseElements());
+  let prunable = ($branches->size() > 1) && ($width > 1)
+    && $ownClauses.noUnknownElement->forAll(known | $known)
+    && $branches->forAll(b | ($b.columns->size() == $width) && ($b.distinct != true) && $b.pivot->isEmpty() && !$b->instanceOf(VarSetPlaceHolder) && !$b->instanceOf(RelationDataSelectSqlQuery) && $b.columns->forAll(c | $c->outputNames()->isNotEmpty()) && !$b->definesCardinality() && !$b->hasOrdinal());
+  if(!$prunable,
+    | $union,
+    | let selfReferencedNames = $ownClauses.elements->map(e | $e->match([c:ColumnName[1] | $c.name, a:Alias[1] | $a.name, a:Any[1] | []]))->map(n | $n->keepKey());
+      let keep = range($width)->filter(i | $branches->exists(b | $b.columns->at($i)->outputNames()->exists(n | $n->keepKey()->in($selfReferencedNames)))
+                                           || $branches->at(0).columns->at($i)->outputNames()->exists(n | $n->keepKey()->in($referencedNames)));
+      let kept = if($keep->isEmpty(), | [0], | $keep);
+      if($kept->size() == $width,
+        | $union,
+        | ^$union(queries = $branches->map(b | let columns = $kept->map(i | $b.columns->at($i)); ^$b(columns = $columns);))
+      );
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::ownClauseElements(select:SelectSQLQuery[1]):RelationalElementCollection[1]
+{
+  $select.filteringOperation->concatenate($select.groupBy)->concatenate($select.havingOperation)->concatenate($select.qualifyOperation)->concatenate($select.orderBy.column)->extractRelationalElements(false)
+}
+
+// The generator marks the aggregates it builds (AggregateDynaFunction); an aggregate written in a Database view is built by the
+// relational compiler unmarked, so it can only be recognised by name.
+function <<access.private>> meta::relational::sqlOptimizer::rules::viewAggregateNames():String[*]
+{
+  ['count', 'sum', 'max', 'min', 'average', 'avg', 'distinctCount', 'joinStrings', 'stdDevSample', 'stdDevPopulation', 'varianceSample', 'variancePopulation', 'percentile', 'percentileCont', 'percentileDisc', 'median', 'mode', 'first', 'last', 'any', 'arrayAgg', 'listAgg', 'corr', 'covarSample', 'covarPopulation', 'wavg', 'bitAnd', 'bitOr', 'bitXor', 'boolAnd', 'boolOr']
+}
+
+// An aggregate without GROUP BY returns exactly one row whatever the input size, so its aggregates define the select's cardinality and must stay.
+function meta::relational::sqlOptimizer::rules::definesCardinality(select:SelectSQLQuery[1]):Boolean[1]
+{
+  $select.groupBy->isEmpty() && $select.columns->exists(c |
+    let elements = $c->extractRelationalElements(false);
+    !$elements.noUnknownElement || $elements.elements->exists(e | $e->instanceOf(AggregateFunctionCall) || $e->instanceOf(meta::relational::metamodel::operation::JoinStrings) || $e->instanceOf(AggregateDynaFunction) || ($e->instanceOf(DynaFunction) && $e->cast(@DynaFunction).name->in(viewAggregateNames())));
+  )
+}
+
+// An integer in ORDER BY or GROUP BY is a column position, so dropping or reordering columns would change its meaning.
+function meta::relational::sqlOptimizer::rules::hasOrdinal(select:SelectSQLQuery[1]):Boolean[1]
+{
+  $select.orderBy.column->exists(c | $c->instanceOf(Literal)) || $select.groupBy->exists(g | $g->instanceOf(Literal))
+}

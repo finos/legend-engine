@@ -48,6 +48,7 @@ public class PerfSuite
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String DEFAULT_BASELINE = "perf-baseline.json";
     private static final int SCHEMA_VERSION = 1;
+    private static final double SQL_SIZE_MARGIN = 0.02;
 
     public static int run(String[] args) throws Exception
     {
@@ -62,6 +63,7 @@ public class PerfSuite
         double canaryMargin = Double.parseDouble(options.getOrDefault("canary-margin", "0.3"));
         long minDelta = Long.parseLong(options.getOrDefault("min-delta-ms", "25"));
         boolean allowImprovement = options.containsKey("allow-improvement");
+        int rounds = Integer.parseInt(options.getOrDefault("rounds", "1"));
 
         String record = options.get("record");
         if (record != null)
@@ -70,6 +72,11 @@ public class PerfSuite
         }
 
         List<BenchConfig> workloads = workloads(suiteName, iterations, warmup);
+        String only = options.get("only");
+        if (only != null)
+        {
+            workloads.removeIf(config -> !config.workloadId().contains(only));
+        }
         System.out.println("suite '" + suiteName + "': " + workloads.size() + " workloads, "
                 + warmup + " warmup + " + iterations + " measured iterations each");
 
@@ -79,13 +86,19 @@ public class PerfSuite
         results.put("generatedAt", Instant.now().toString());
         results.put("environment", Environment.capture());
 
-        List<Map<String, Object>> workloadResults = new ArrayList<>();
-        for (BenchConfig config : workloads)
+        List<List<Map<String, Object>>> roundResults = new ArrayList<>();
+        for (int round = 1; round <= rounds; round++)
         {
-            System.out.println("  running " + config.workloadId());
-            Map<String, Object> result = new PipelineBench(config).quiet().measure();
-            workloadResults.add(result);
+            List<Map<String, Object>> workloadRound = new ArrayList<>();
+            for (BenchConfig config : workloads)
+            {
+                System.out.println("  running " + config.workloadId() + (rounds > 1 ? " (round " + round + " of " + rounds + ")" : ""));
+                workloadRound.add(new PipelineBench(config).quiet().measure());
+            }
+            roundResults.add(workloadRound);
         }
+        List<Map<String, Object>> workloadResults = mergeRounds(roundResults);
+        results.put("rounds", rounds);
         results.put("workloads", workloadResults);
         results.put("canaries", canaries(workloadResults));
 
@@ -125,12 +138,38 @@ public class PerfSuite
             {
                 System.out.println("  baseline has: " + known);
             }
-            System.out.println("  numbers from another machine are not comparable, so nothing is being checked.");
-            System.out.println("  run this suite with --rebase here to record one.");
+            System.out.println("  timings from another machine are not comparable, so they are not being checked.");
+            System.out.println("  run this suite with --rebase here to record an entry for it.");
             printCanaries(results);
-            return 0;
+            return compareSqlSizesWithAnyEntry(baseline, results, allowImprovement) ? 0 : 1;
         }
         return compare(recorded, results, margin, canaryMargin, minDelta, allowImprovement) ? 0 : 1;
+    }
+
+    private static boolean compareSqlSizesWithAnyEntry(Map<String, Object> baseline, Map<String, Object> results, boolean allowImprovement)
+    {
+        for (Map.Entry<String, Object> environment : environments(baseline).entrySet())
+        {
+            Map<String, Object> entry = PipelineBench.asMap(environment.getValue());
+            if (entry.isEmpty() || workloadList(entry).stream().noneMatch(w -> w.get("sql") != null))
+            {
+                continue;
+            }
+            List<String> regressions = new ArrayList<>();
+            List<String> improvements = new ArrayList<>();
+            System.out.println();
+            System.out.println("checking sql sizes against the entry for " + environment.getKey());
+            checkSqlSizes(entry, results, allowImprovement, regressions, improvements);
+            if (regressions.isEmpty() && improvements.isEmpty())
+            {
+                System.out.println("PASS - sql sizes match the baseline");
+                return true;
+            }
+            System.out.println("FAIL - sql sizes differ from the baseline: " + (regressions.size() + improvements.size()) + " metric(s)");
+            return false;
+        }
+        System.out.println("no baseline entry holds sql sizes yet");
+        return true;
     }
 
     /**
@@ -215,6 +254,25 @@ public class PerfSuite
             configs.add(relationWorkload("simple", 200));
             configs.add(workload("graph1", 30));
             configs.add(workload("graph4", 30));
+            configs.add(aggregateViewWorkload("conj4", 30, 10));
+            configs.add(aggregateViewWorkload("conj10", 30, 10));
+            configs.add(starWorkload("dup10", 41, 40));
+            configs.add(starWorkload("dup40", 41, 40));
+            configs.add(starWorkload("star10", 41, 40));
+            configs.add(starWorkload("star40", 41, 40));
+            configs.add(hopWorkload("uhop", 41, 10));
+            configs.add(hopWorkload("uhop", 41, 40));
+            for (String shape : new String[] {"tower20", "tower80", "win5", "win20", "case50", "case200", "and100", "and300", "orand50", "orand200", "trim20", "trim200"})
+            {
+                configs.add(workload(shape, 30));
+            }
+            configs.add(starWorkload("towerstar8", 41, 40));
+            configs.add(starWorkload("towerstar25", 41, 40));
+            for (String shape : new String[] {"tower80", "win20", "case200", "and300", "orand200", "trim200"})
+            {
+                configs.add(withoutSqlOptimizer(workload(shape, 30)));
+            }
+            configs.add(withoutSqlOptimizer(starWorkload("towerstar25", 41, 40)));
         }
         else
         {
@@ -226,6 +284,38 @@ public class PerfSuite
             config.warmup = warmup;
         }
         return configs;
+    }
+
+    /**
+     * One result per workload: the first round's cold timings and SQL sizes, and each warm phase as the median over the rounds, which
+     * damps the noise of a single run and leaves the first round to absorb the JIT warm-up.
+     */
+    static List<Map<String, Object>> mergeRounds(List<List<Map<String, Object>>> rounds)
+    {
+        List<Map<String, Object>> merged = new ArrayList<>();
+        List<Map<String, Object>> first = rounds.get(0);
+        for (int i = 0; i < first.size(); i++)
+        {
+            Map<String, Object> result = new LinkedHashMap<>(first.get(i));
+            Map<String, Object> medians = new LinkedHashMap<>();
+            for (String phase : PipelineBench.asMap(first.get(i).get("warmMedianMs")).keySet())
+            {
+                List<Long> values = new ArrayList<>();
+                for (List<Map<String, Object>> round : rounds)
+                {
+                    Object value = PipelineBench.asMap(round.get(i).get("warmMedianMs")).get(phase);
+                    if (value != null)
+                    {
+                        values.add(((Number) value).longValue());
+                    }
+                }
+                values.sort(Long::compare);
+                medians.put(phase, values.get(values.size() / 2));
+            }
+            result.put("warmMedianMs", medians);
+            merged.add(result);
+        }
+        return merged;
     }
 
     private static BenchConfig workload(String query, int scale)
@@ -240,6 +330,33 @@ public class PerfSuite
     {
         BenchConfig config = workload(query, scale);
         config.unionSets = unionSets;
+        return config;
+    }
+
+    private static BenchConfig aggregateViewWorkload(String query, int scale, int views)
+    {
+        BenchConfig config = workload(query, scale);
+        config.aggregateViews = views;
+        return config;
+    }
+
+    private static BenchConfig starWorkload(String query, int scale, int starJoins)
+    {
+        BenchConfig config = workload(query, scale);
+        config.starJoins = starJoins;
+        return config;
+    }
+
+    private static BenchConfig hopWorkload(String query, int scale, int hops)
+    {
+        BenchConfig config = workload(query, scale);
+        config.hops = hops;
+        return config;
+    }
+
+    private static BenchConfig withoutSqlOptimizer(BenchConfig config)
+    {
+        config.sqlOptimizer = "none";
         return config;
     }
 
@@ -269,6 +386,42 @@ public class PerfSuite
                 "per-column lambda compilation in Relation mappings"));
         canaries.add(ratio(workloads, "javaBindGraphDepth", "javaBind", "graph4@scale30/H2", "graph1@scale30/H2",
                 "platform binder growth in graph-fetch tree size"));
+        canaries.add(ratio(workloads, "planPureFilterConjuncts", "planPure", "conj10@scale30+aggviews10/H2", "conj4@scale30+aggviews10/H2",
+                "SQL optimization superlinearity in the number of filter conjuncts pushed into subqueries"));
+        canaries.add(ratio(workloads, "planPureRepeatedLeftJoins", "planPure", "dup40@scale41+star40/H2", "dup10@scale41+star40/H2",
+                "SQL optimization superlinearity in the number of repeated left joins merged"));
+        canaries.add(ratio(workloads, "planPureLeftJoinFanOut", "planPure", "star40@scale41+star40/H2", "star10@scale41+star40/H2",
+                "SQL optimization superlinearity in the number of read left joins checked for elimination"));
+        canaries.add(ratio(workloads, "planPureUnreadJoinChain", "planPure", "uhop@scale41+hops40/H2", "uhop@scale41+hops10/H2",
+                "SQL optimization superlinearity in the depth of an unread left-join chain"));
+        canaries.add(ratio(workloads, "planPureWrapperTower", "planPure", "tower80@scale30/H2", "tower20@scale30/H2",
+                "SQL optimization superlinearity in the number of nested wrapper selects"));
+        canaries.add(ratio(workloads, "planPureWindowLayers", "planPure", "win20@scale30/H2", "win5@scale30/H2",
+                "SQL optimization superlinearity in the number of nested window layers"));
+        canaries.add(ratio(workloads, "planPureConditionalColumns", "planPure", "case200@scale30/H2", "case50@scale30/H2",
+                "SQL optimization superlinearity in the number of conditional select-list columns"));
+        canaries.add(ratio(workloads, "planPureConjunctList", "planPure", "and300@scale30/H2", "and100@scale30/H2",
+                "SQL optimization superlinearity in the number of conjuncts of one filter"));
+        canaries.add(ratio(workloads, "planPureFlatPredicate", "planPure", "orand200@scale30/H2", "orand50@scale30/H2",
+                "SQL optimization superlinearity in the size of one flat OR-of-AND predicate"));
+        canaries.add(ratio(workloads, "optimizerCostWrapperTower", "planPure", "tower80@scale30/H2", "tower80@scale30+sqlopt-none/H2",
+                "what the SQL optimizer adds to plan generation for a tower of wrapper selects it cannot shrink"));
+        canaries.add(ratio(workloads, "optimizerCostWindowLayers", "planPure", "win20@scale30/H2", "win20@scale30+sqlopt-none/H2",
+                "what the SQL optimizer adds to plan generation for nested window layers"));
+        canaries.add(ratio(workloads, "optimizerCostConditionalColumns", "planPure", "case200@scale30/H2", "case200@scale30+sqlopt-none/H2",
+                "what the SQL optimizer adds to plan generation for a select list of conditional columns"));
+        canaries.add(ratio(workloads, "optimizerCostConjunctList", "planPure", "and300@scale30/H2", "and300@scale30+sqlopt-none/H2",
+                "what the SQL optimizer adds to plan generation for a filter of many conjuncts"));
+        canaries.add(ratio(workloads, "optimizerCostFlatPredicate", "planPure", "orand200@scale30/H2", "orand200@scale30+sqlopt-none/H2",
+                "what the SQL optimizer adds to plan generation for one flat predicate of thousands of nodes"));
+        canaries.add(ratio(workloads, "planPureWrapperTowerOverStar", "planPure", "towerstar25@scale41+star40/H2", "towerstar8@scale41+star40/H2",
+                "SQL optimization superlinearity in the depth of a wrapper tower over a star of left joins"));
+        canaries.add(ratio(workloads, "optimizerCostWrapperTowerOverStar", "planPure", "towerstar25@scale41+star40/H2", "towerstar25@scale41+star40+sqlopt-none/H2",
+                "what the SQL optimizer adds to plan generation for a deep wrapper tower over a star of left joins"));
+        canaries.add(ratio(workloads, "planPureColumnTrimming", "planPure", "trim200@scale30/H2", "trim20@scale30/H2",
+                "SQL optimization superlinearity in the number of columns trimmed from a subselect"));
+        canaries.add(ratio(workloads, "optimizerCostColumnTrimming", "planPure", "trim200@scale30/H2", "trim200@scale30+sqlopt-none/H2",
+                "what the SQL optimizer adds to plan generation for a wide subselect it trims"));
         canaries.removeIf(canary -> canary.get("value") == null);
         return canaries;
     }
@@ -299,6 +452,51 @@ public class PerfSuite
             }
         }
         return null;
+    }
+
+    /**
+     * Holds each workload's SQL to the size recorded in the baseline. Sizes do not depend on the machine, so this also runs against
+     * an entry recorded elsewhere.
+     */
+    static void checkSqlSizes(Map<String, Object> baseline, Map<String, Object> current, boolean allowImprovement,
+                              List<String> regressions, List<String> improvements)
+    {
+        Map<String, Map<String, Object>> baselineWorkloads = byWorkload(baseline);
+        System.out.println();
+        System.out.println("sql sizes (enforced, margin " + percent(SQL_SIZE_MARGIN) + ", the same on every machine)");
+        for (Map<String, Object> workload : workloadList(current))
+        {
+            String id = String.valueOf(workload.get("workload"));
+            Map<String, Object> baselineWorkload = baselineWorkloads.get(id);
+            if (baselineWorkload == null)
+            {
+                continue;
+            }
+            Map<String, Object> before = PipelineBench.asMap(baselineWorkload.get("sql"));
+            Map<String, Object> now = PipelineBench.asMap(workload.get("sql"));
+            for (Map.Entry<String, Object> entry : now.entrySet())
+            {
+                Object baselineValue = before.get(entry.getKey());
+                if (baselineValue == null)
+                {
+                    continue;
+                }
+                long baselineSize = ((Number) baselineValue).longValue();
+                long currentSize = ((Number) entry.getValue()).longValue();
+                String message = id + " sql " + entry.getKey() + ": " + baselineSize + " -> " + currentSize
+                        + " (expected " + Math.round(baselineSize * (1.0 - SQL_SIZE_MARGIN)) + " to " + Math.round(baselineSize * (1.0 + SQL_SIZE_MARGIN)) + ")";
+                if (currentSize > baselineSize * (1.0 + SQL_SIZE_MARGIN))
+                {
+                    System.out.println("  LARGER " + message);
+                    regressions.add(message);
+                }
+                else if (currentSize < baselineSize * (1.0 - SQL_SIZE_MARGIN) && !allowImprovement)
+                {
+                    System.out.println("  SMALLER " + message);
+                    improvements.add(message);
+                }
+            }
+        }
     }
 
     static boolean compare(Map<String, Object> baseline, Map<String, Object> current, double margin, double canaryMargin,
@@ -391,6 +589,8 @@ public class PerfSuite
                 }
             }
         }
+
+        checkSqlSizes(baseline, current, allowImprovement, regressions, improvements);
 
         System.out.println();
         for (String note : notes)

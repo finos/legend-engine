@@ -406,7 +406,7 @@ function <<test.Test>> meta::relational::tests::mapping::extend::union::property
 
 function <<test.Test>> meta::relational::tests::mapping::extend::union::propertyMapping::testPropertyMappingOverridesWithUnion():Any[*]
 {
-   let expectedSQL = 'select "unionBase"."ABCid_ABCid" as "Id", "unionBase"."concat_bSet1__ABCaName_concat_cSet1__ABCaName" as "A_Name" from (select "root".id as "pk_0_0", null as "pk_0_1", "root".id as "ABCid_ABCid", concat(\'bSet1_\', "root".aName) as "concat_bSet1__ABCaName_concat_cSet1__ABCaName" from ABC as "root" union all select null as "pk_0_0", "root".id as "pk_0_1", "root".id as "ABCid_ABCid", concat(\'cSet1_\', "root".aName) as "concat_bSet1__ABCaName_concat_cSet1__ABCaName" from ABC as "root") as "unionBase"';
+   let expectedSQL = 'select "unionBase"."ABCid_ABCid" as "Id", "unionBase"."concat_bSet1__ABCaName_concat_cSet1__ABCaName" as "A_Name" from (select "root".id as "ABCid_ABCid", concat(\'bSet1_\', "root".aName) as "concat_bSet1__ABCaName_concat_cSet1__ABCaName" from ABC as "root" union all select "root".id as "ABCid_ABCid", concat(\'cSet1_\', "root".aName) as "concat_bSet1__ABCaName_concat_cSet1__ABCaName" from ABC as "root") as "unionBase"';
    let expectedResult = ['1,bSet1_aName1', '1,cSet1_aName1', '2,bSet1_aName2', '2,cSet1_aName2', '3,bSet1_aName1', '3,cSet1_aName1', '4,bSet1_aName2', '4,cSet1_aName2'];
    
    let result1 = execute(|A.all()->project([a | $a.id, a | $a.aName], ['Id', 'A_Name']), UnionMappingWithExtendOverrides, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());

@@ -1,0 +1,352 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::external::store::relational::sqlPlanning::ruleBasedTransformation::*;
+import meta::relational::extension::*;
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::postProcessor::*;
+import meta::relational::sqlOptimizer::*;
+import meta::relational::sqlOptimizer::rules::*;
+import meta::relational::sqlOptimizer::tree::*;
+
+function meta::relational::sqlOptimizer::rules::joinFilterPushDownRule():SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'JoinFilterPushDown',
+    featureName = 'JOIN_FILTER_PUSH_DOWN',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {query:SelectSQLQuery[1], ctx:SqlOptimizerContext[1] | $query->pushDownFiltersTrackingChanges(true, subQueryFilterPushDownRule()->isInScope($ctx), $ctx.extensions)}
+  )
+}
+
+// When both pushdowns are enabled the join rule runs the shared walk for both, so a filter pushed into a
+// subselect reaches that subselect's joins in the same pass, keeping the predicate order of the original single pass.
+function meta::relational::sqlOptimizer::rules::subQueryFilterPushDownRule():SqlOptimizationRule[1]
+{
+  ^SqlOptimizationRule(
+    name = 'SubQueryFilterPushDown',
+    featureName = 'SUB_QUERY_FILTER_PUSH_DOWN',
+    enabledByDefault = true,
+    databaseSupport = ^AllDatabaseSupport(),
+    transform = {query:SelectSQLQuery[1], ctx:SqlOptimizerContext[1] | if(joinFilterPushDownRule()->isInScope($ctx), | unchanged($query), | $query->pushDownFiltersTrackingChanges(false, true, $ctx.extensions))}
+  )
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::pushDownFiltersTrackingChanges(selectSQLQuery:SelectSQLQuery[1], intoJoins:Boolean[1], intoSubQueries:Boolean[1], extensions:Extension[*]):OptimizedQuery[1]
+{
+  let pushed = $selectSQLQuery->pushDownFilters($intoJoins, $intoSubQueries, $extensions);
+  $pushed->changedIfNotSame($selectSQLQuery, | $pushed->filterConjunctCount() > $selectSQLQuery->filterConjunctCount());
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::pushDownFilters(selectSQLQuery:SelectSQLQuery[1], intoJoins:Boolean[1], intoSubQueries:Boolean[1], extensions:Extension[*]):SelectSQLQuery[1]
+{
+  let transformFunction = {r: RelationalOperationElement[1] |
+                             $r->match([
+                                s: SelectSQLQuery[1] | if($s.data->isNotEmpty(),
+                                                          | let data = $s.data->toOne()->pushFiltersDownToJoins(list($s.filteringOperation->getFilteringPairs()), $intoJoins, $intoSubQueries, $extensions);
+                                                          if(is($data, $s.data->toOne()),
+                                                             | $s,
+                                                             | let newS = ^$s(data = $data->cast(@RootJoinTreeNode));
+                                                               if($s.leftSideOfFilter->isNotEmpty(),
+                                                                  |^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),
+                                                                  | $newS);
+                                                          );,
+                                                          | $s),
+                                rel: RelationalOperationElement[1] | $rel;
+                             ]);
+                          };
+
+  $selectSQLQuery->transformIfChanged($transformFunction)->cast(@SelectSQLQuery);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::pushFiltersDownToJoins(r: RelationalTreeNode[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], intoJoins:Boolean[1], intoSubQueries:Boolean[1], extensions:Extension[*]):RelationalTreeNode[1]
+{
+  let unSupportedJoinExists = $r->allNodes()->exists(n | $n->match([
+    j: JoinTreeNode[1] | $j.joinType->in([JoinType.RIGHT_OUTER, JoinType.FULL_OUTER]),
+    a: Any[*]          | false
+  ]));
+
+  if ($unSupportedJoinExists,
+      | $r,
+      | $r->match([
+           j:JoinTreeNode[1] | let join = $j.join;
+                               // An ASOF join's condition is printed positionally as its match condition then its column
+                               // equalities (Snowflake MATCH_CONDITION ... ON ...); a pushed copy would be misplaced or dropped.
+                               let res = if($intoJoins && !$join->instanceOf(meta::relational::metamodel::join::AsOfJoin),
+                                            | $join.operation->tryAddingFiltersToJoinOperation($filteringPairs, $j.alias, $extensions),
+                                            | pair($join.operation, list([]->cast(@Pair<TableAliasColumn, RelationalOperationElement>))));
+                               let alias = if($intoSubQueries, | $j.alias->tryPushFiltersIntoSubQuery(list($res.first->getFilteringPairs()), $extensions), | $j.alias);
+                               let children = $j->children()->mapOnce(c | $c->pushFiltersDownToJoins(list($filteringPairs.values->concatenate($res.second.values)), $intoJoins, $intoSubQueries, $extensions));
+                               if(is($res.first, $join.operation) && is($alias, $j.alias) && $children->sameElements($j->children()),
+                                  | $j,
+                                  | ^$j(join=^$join(operation=$res.first->cast(@Operation)), alias=$alias, childrenData=$children));,
+           r:RelationalTreeNode[1] | let alias = if($intoSubQueries, | $r.alias->tryPushFiltersIntoSubQuery($filteringPairs, $extensions), | $r.alias);
+                                     let children = $r->children()->mapOnce(c | $c->pushFiltersDownToJoins($filteringPairs, $intoJoins, $intoSubQueries, $extensions));
+                                     if(is($alias, $r.alias) && $children->sameElements($r->children()), | $r, | ^$r(alias=$alias, childrenData=$children));
+       ]);
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::candidatePairsForAlias(alias: TableAlias[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions: Extension[*]): List<Pair<TableAliasColumn, RelationalOperationElement>>[1]
+{
+  // In a relational tree node, alias names should be unique (sub queries not considered)
+  ^$filteringPairs(values = $filteringPairs.values->filter(p | $p.first.alias.name == $alias.name));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::tryPushFiltersIntoSubQuery(alias: TableAlias[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:Extension[*]):TableAlias[1]
+{
+  $alias.relationalElement->match([
+    subSelect: SelectSQLQuery[1]      | let pushed = $subSelect->tryAddingFiltersToSubQuery(candidatePairsForAlias($alias, $filteringPairs, $extensions), $extensions);
+                                        if(is($pushed, $subSelect), | $alias, | ^$alias(relationalElement = $pushed));,
+    viewSelect: ViewSelectSQLQuery[1] | let pushed = $viewSelect.selectSQLQuery->tryAddingFiltersToSubQuery(candidatePairsForAlias($alias, $filteringPairs, $extensions), $extensions);
+                                        if(is($pushed, $viewSelect.selectSQLQuery), | $alias, | ^$alias(relationalElement = ^$viewSelect(selectSQLQuery = $pushed)));,
+    a:Any[*]                          | $alias
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::tryAddingFiltersToSubQuery(subSelect: SelectSQLQuery[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], extensions:Extension[*]): SelectSQLQuery[1]
+{
+  if ($filteringPairs.values->isEmpty(),
+      | $subSelect,
+      | let elementsInSubSelect = $subSelect->extractRelationalElements(false);
+        let subSelectHasUnknownElementsOrWindowColumns = (!$elementsInSubSelect.noUnknownElement) || $elementsInSubSelect.elements->exists(x | $x->instanceOf(WindowColumn));
+        let subSelectHasFromOrToRow = $subSelect.fromRow->isNotEmpty() || $subSelect.toRow->isNotEmpty();
+        let cannotPushFiltersIntoSubQuery = $subSelectHasUnknownElementsOrWindowColumns || $subSelectHasFromOrToRow || ($subSelect.filteringOperation->size() > 1) || ($subSelect.havingOperation->size() > 1) || ($subSelect.qualifyOperation->size() > 1);
+        if ($cannotPushFiltersIntoSubQuery,
+            | $subSelect,
+            | $filteringPairs.values->fold({fp, aggSelect | $aggSelect->tryAddingSingleFilterToSubQuery($fp, $extensions)}, $subSelect);
+        );
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::tryAddingSingleFilterToSubQuery(subSelect: SelectSQLQuery[1], filteringPair: Pair<TableAliasColumn, RelationalOperationElement>[1], extensions:Extension[*]): SelectSQLQuery[1]
+{
+  let groupByExists = $subSelect.groupBy->isNotEmpty();
+
+  let selectCol = $subSelect.columns->filter(x | $x->match([
+    a:Alias[1] | ($a.name == $filteringPair.first.column.name) && $a.relationalElement->resolveIfSingleTableAliasColumnGroup()->instanceOf(TableAliasColumn), 
+    a:Any[*]   | false
+  ]));
+
+  let groupByNames = $subSelect.groupBy->map(column| $column->match([a:Alias[1]|$a.name, c:ColumnName[1]|$c.name, a:Any[*]|[]]));
+  let isGroupingColumn = $groupByNames->contains($filteringPair.first.column.name) || 
+                         (
+                           ($selectCol->size() == 1) && 
+                           $subSelect.groupBy->map(g | $g->resolveIfSingleTableAliasColumnGroup())->exists({x |
+                              let selectTAC = $selectCol->toOne()->cast(@Alias).relationalElement->resolveIfSingleTableAliasColumnGroup()->cast(@TableAliasColumn);
+                              $x->instanceOf(TableAliasColumn) && ($x->cast(@TableAliasColumn).alias.name == $selectTAC.alias.name) && ($x->cast(@TableAliasColumn).column.name == $selectTAC.column.name);
+                           })
+                         );
+  let opToUpdate = if ($groupByExists && (!$isGroupingColumn), 
+                       | $subSelect.havingOperation,
+                       | $subSelect.filteringOperation
+                   );
+
+  let newFilter = if ($selectCol->size() == 1,
+                      | let toReplaceWith = $selectCol->toOne()->cast(@Alias).relationalElement->resolveIfSingleTableAliasColumnGroup();
+                        let transformFunc = {rel: RelationalOperationElement[1] | if($rel->isReferenceTo($filteringPair.first), | $toReplaceWith, | $rel)};
+                        $filteringPair.second->transformNonCached($transformFunc);,
+                      | []
+                  );
+
+  if ($newFilter->isEmpty() || $opToUpdate->conjuncts()->hasConjunct($newFilter->toOne(), $extensions),
+      | $subSelect,
+      | let updatedOp = if($opToUpdate->size() == 1, | $opToUpdate->toOne()->andWith($newFilter->toOne()), | $newFilter);
+        if ($groupByExists && (!$isGroupingColumn), 
+            | ^$subSelect(havingOperation = $updatedOp),
+            | ^$subSelect(filteringOperation = $updatedOp)
+        );
+  );
+}
+
+// Pushed copies extend one flat conjunction, so k copies leave the filter one level deep instead of k.
+function <<access.private>> meta::relational::sqlOptimizer::rules::andWith(operation: RelationalOperationElement[1], conjunct: RelationalOperationElement[1]): RelationalOperationElement[1]
+{
+  newAndOrDynaFunctionRelaxedBrackets('and', $operation->andOperands()->concatenate($conjunct))
+}
+
+// Equality on SQL elements is structural only where the metamodel declares keys, so a copy of a predicate that reads a
+// subquery, a parameter or a subselect's column is a new, unequal instance on every pass; such copies are matched by
+// their printed form. Printing is linear in the predicate's size, so it is kept to those copies.
+function <<access.private>> meta::relational::sqlOptimizer::rules::hasConjunct(conjuncts: RelationalOperationElement[*], candidate: RelationalOperationElement[1], extensions: Extension[*]): Boolean[1]
+{
+  if($conjuncts->contains($candidate),
+    | true,
+    | if($candidate->comparesStructurally(),
+        | false,
+        | let name = $candidate->buildUniqueName(true, $extensions);
+          $conjuncts->filter(c | !$c->comparesStructurally())->exists(c | $c->buildUniqueName(true, $extensions) == $name);
+      )
+  )
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::comparesStructurally(element: RelationalOperationElement[1]): Boolean[1]
+{
+  let elements = $element->extractRelationalElements(true);
+  $elements.noUnknownElement && $elements.elements->forAll(e | $e->match([
+    d: DynaFunction[1] | true,
+    c: ColumnName[1] | true,
+    c: Column[1] | true,
+    t: TableAliasColumn[1] | !$t.alias.relationalElement->instanceOf(SelectSQLQuery),
+    l: Literal[1] | $l->hasPrimitiveValue(),
+    ll: LiteralList[1] | $ll.values->forAll(v | $v->hasPrimitiveValue()),
+    a: Any[1] | false
+  ]));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::hasPrimitiveValue(literal: Literal[1]): Boolean[1]
+{
+  $literal.value->instanceOf(String) || $literal.value->instanceOf(Number) || $literal.value->instanceOf(Boolean) || $literal.value->instanceOf(Date)
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::andOperands(operation: RelationalOperationElement[1]): RelationalOperationElement[*]
+{
+  $operation->match([
+    d: DynaFunction[1] | if($d.name == 'and', | $d.parameters->map(p | $p->andOperands()), | $d),
+    r: RelationalOperationElement[1] | $r
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::resolveIfSingleTableAliasColumnGroup(relOp: RelationalOperationElement[1]): RelationalOperationElement[1]
+{
+  $relOp->match([
+    d: DynaFunction[1] | if(($d.name == 'group') && ($d.parameters->size() == 1) && $d.parameters->at(0)->instanceOf(TableAliasColumn),
+                            | $d.parameters->at(0),
+                            | $relOp
+                         ),
+    a: Any[*] | $relOp
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::addFilterToJoinoperation(filteringPairs : Pair<TableAliasColumn, RelationalOperationElement>[*], left: TableAliasColumn[1], right: TableAliasColumn[1], operation: RelationalOperationElement[1], joinTableAlias: TableAlias[1], existingConjuncts: RelationalOperationElement[*], extensions:Extension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
+{
+  let candidatePairs = $filteringPairs->filter(p | $p.first == $left && ($left.alias.name != $joinTableAlias.name) && $p.second->isImpliedThroughEquality($left->comparedType(), $right->comparedType()));
+  let tranformFunc = {rel: RelationalOperationElement[1] | if($rel->isReferenceTo($left), | $right, | $rel)};
+  $candidatePairs->fold({element, aggregate | let transformedElement = $element.second->transformNonCached($tranformFunc);
+                                              let operationWithFilter = if($existingConjuncts->concatenate($aggregate.first->conjuncts())->hasConjunct($transformedElement, $extensions),
+                                                                           | $aggregate.first,
+                                                                           | $aggregate.first->andWith($transformedElement));
+                                              pair( $operationWithFilter,
+                                                    list($aggregate.second.values->add(pair($right, $transformedElement))));}, pair($operation, list([]->cast(@Pair<TableAliasColumn, RelationalOperationElement>))));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::tryAddingFiltersToJoinOperation(operation:RelationalOperationElement[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], joinTableAlias: TableAlias[1], extensions:Extension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
+{
+  $operation->tryAddingFiltersToJoinOperation($filteringPairs, $joinTableAlias, $operation->conjuncts(), $extensions);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::tryAddingFiltersToJoinOperation(operation:RelationalOperationElement[1], filteringPairs: List<Pair<TableAliasColumn, RelationalOperationElement>>[1], joinTableAlias: TableAlias[1], existingConjuncts: RelationalOperationElement[*], extensions:Extension[*]):Pair<RelationalOperationElement, List<Pair<TableAliasColumn, RelationalOperationElement>>>[1]
+{
+  if(($operation->instanceOf(DynaFunction) && $operation->cast(@DynaFunction).name == 'equal'),
+    | let left  = $operation->cast(@DynaFunction).parameters->at(0);
+      let right = $operation->cast(@DynaFunction).parameters->at(1);
+      if($left->instanceOf(TableAliasColumn) && $right->instanceOf(TableAliasColumn),
+         | let first  = addFilterToJoinoperation($filteringPairs.values, $left->cast(@TableAliasColumn), $right->cast(@TableAliasColumn), $operation, $joinTableAlias, $existingConjuncts, $extensions);
+           let second = addFilterToJoinoperation($filteringPairs.values, $right->cast(@TableAliasColumn), $left->cast(@TableAliasColumn), $first.first, $joinTableAlias, $existingConjuncts, $extensions);
+           pair($second.first, list($first.second.values->concatenate($second.second.values)));,
+         | pair($operation, list([])));,
+
+    | if(($operation->instanceOf(DynaFunction) && $operation->cast(@DynaFunction).name == 'and'),
+         | let dynaOp = $operation->cast(@DynaFunction);
+           let res = $dynaOp.parameters->fold({param, acc |
+               let added = $acc.second.values.second;
+               let paramResult = $param->tryAddingFiltersToJoinOperation($filteringPairs, $joinTableAlias, $existingConjuncts->concatenate($added), $extensions);
+               pair(list($acc.first.values->add($paramResult.first)), list($acc.second.values->concatenate($paramResult.second.values)));
+             }, pair(list([]->cast(@RelationalOperationElement)), list([]->cast(@Pair<TableAliasColumn, RelationalOperationElement>))));
+           pair(if($res.first.values->sameElements($dynaOp.parameters), | $dynaOp, | ^$dynaOp(parameters=$res.first.values)), $res.second);,
+         | pair($operation, list([]))
+        )
+    )
+}
+
+// A function activator's post processor replaces each parameter VarPlaceHolder with a TableFunctionParamPlaceHolder before the optimizer runs.
+function <<access.private>> meta::relational::sqlOptimizer::rules::isScalarPrimitiveParameter(element: RelationalOperationElement[1]):Boolean[1]
+{
+  $element->match([
+    v: VarPlaceHolder[1] | $v.type->instanceOf(PrimitiveType),
+    t: TableFunctionParamPlaceHolder[1] | $t.var.type->instanceOf(PrimitiveType) && !$t.var->meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(),
+    a: Any[1] | false
+  ])
+}
+
+// A predicate on a single column is copied across `l = r` whatever its shape (and/or/not of comparisons), as long as it reads
+// nothing but the column's value: functions that see its text (length, upper, toString) can tell apart values `=` calls equal.
+// The copy also runs on rows the original predicate never saw, so functions that can fail on some input (sqrt, log, pow, exp)
+// are left out even though they read only the value.
+function <<access.private>> meta::relational::sqlOptimizer::rules::getFilteringPairs(operation: RelationalOperationElement[*]):Pair<TableAliasColumn, RelationalOperationElement>[*]
+{
+  $operation->map(op | $op->match([
+    d: DynaFunction[1] | if($d.name->in(['and', 'group']), | $d.parameters->getFilteringPairs(), | $d->singleColumnFilteringPair()),
+    r: RelationalOperationElement[1] | $r->singleColumnFilteringPair()
+  ]));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::isReferenceTo(element: RelationalOperationElement[1], column: TableAliasColumn[1]):Boolean[1]
+{
+  $element->match([
+    t: TableAliasColumn[1] | ($t.alias.name == $column.alias.name) && ($t.column.name == $column.column.name),
+    a: Any[1] | false
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::singleColumnFilteringPair(predicate: RelationalOperationElement[1]):Pair<TableAliasColumn, RelationalOperationElement>[0..1]
+{
+  $predicate->singleFilteredColumn()->map(c | pair($c, $predicate));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::singleFilteredColumn(predicate: RelationalOperationElement[1]):TableAliasColumn[0..1]
+{
+  let columns = $predicate->referencedColumns();
+  if(($columns->map(c | $c.alias.name + '.' + $c.column.name)->removeDuplicates()->size() == 1) && $predicate->readsOnlyColumnValues() && !$predicate->meta::relational::sqlOptimizer::rules::mayRaiseError(),
+    | $columns->at(0),
+    | []
+  );
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::referencedColumns(element: RelationalOperationElement[1]):TableAliasColumn[*]
+{
+  $element->match([
+    t: TableAliasColumn[1] | $t,
+    d: DynaFunction[1] | $d.parameters->map(p | $p->referencedColumns()),
+    a: Any[1] | []
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::readsOnlyColumnValues(element: RelationalOperationElement[1]):Boolean[1]
+{
+  $element->match([
+    t: TableAliasColumn[1] | true,
+    l: Literal[1] | true,
+    ll: LiteralList[1] | true,
+    d: DynaFunction[1] | if(($d.name == 'in') && ($d.parameters->size() == 2) && $d.parameters->at(1)->isParameterValueSet(),
+                            | $d.parameters->at(0)->readsOnlyColumnValues(),
+                            | ($d.name->in(valueOnlyFunctionNames()) || $d->referencedColumns()->isEmpty()) && $d.parameters->forAll(p | $p->readsOnlyColumnValues())),
+    r: RelationalOperationElement[1] | $r->isScalarPrimitiveParameter()
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::rules::valueOnlyFunctionNames():String[*]
+{
+  ['and', 'or', 'not', 'group', 'equal', 'notEqual', 'notEqualAnsi', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'in',
+   'isNull', 'isNotNull', 'isEmpty', 'isNotEmpty', 'startsWith', 'endsWith', 'contains',
+   'ceiling', 'floor', 'round', 'sign', 'sin', 'cos', 'tan', 'atan']
+}

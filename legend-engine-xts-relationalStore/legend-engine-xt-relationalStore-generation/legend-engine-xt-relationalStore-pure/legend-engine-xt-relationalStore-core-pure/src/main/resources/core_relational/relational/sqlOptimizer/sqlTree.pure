@@ -1,0 +1,335 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::sqlOptimizer::tree::*;
+
+function meta::relational::sqlOptimizer::tree::filterConjunctCount(selectSQLQuery:SelectSQLQuery[1]):Integer[1]
+{
+  $selectSQLQuery->extractRelationalElements(true).elements
+    ->filter(e | $e->instanceOf(SelectSQLQuery))->cast(@SelectSQLQuery)
+    ->map(s | $s.filteringOperation->conjuncts()->size()
+              + $s.havingOperation->conjuncts()->size()
+              + $s.data->map(d | $d->allNodes())->map(n | $n->match([j: JoinTreeNode[1] | $j.join.operation->conjuncts()->size(), a: Any[*] | 0]))->sum())
+    ->sum();
+}
+
+function meta::relational::sqlOptimizer::tree::conjuncts(operations:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  $operations->map(o | $o->match([
+    d: DynaFunction[1] | if(($d.name == 'and') || (($d.name == 'group') && ($d.parameters->size() == 1)), | $d.parameters->conjuncts(), | $d),
+    r: RelationalOperationElement[1] | $r
+  ]))
+}
+
+function meta::relational::sqlOptimizer::tree::allNodes(r: RelationalTreeNode[1]): RelationalTreeNode[*]
+{
+  $r->concatenate($r->children()->map(x | $x->allNodes()))
+}
+
+// A function activator's post processor turns a collection parameter into a subquery flattening it, which reads nothing but the parameter.
+function meta::relational::sqlOptimizer::tree::isParameterValueSet(element: RelationalOperationElement[1]):Boolean[1]
+{
+  $element->match([
+    s: SelectSQLQuery[1] | $s.filteringOperation->isEmpty() && $s.data->isNotEmpty() && $s.data->toOne().childrenData->isEmpty()
+                             && $s.data->toOne().alias.relationalElement->match([
+                                  f: SemiStructuredArrayFlattenRelation[1] | $f.navigation->readsOnlyParameters(),
+                                  a: Any[1] | false
+                                ]),
+    a: Any[1] | false
+  ])
+}
+
+function meta::relational::sqlOptimizer::tree::readsOnlyParameters(element: RelationalOperationElement[1]):Boolean[1]
+{
+  $element->match([
+    c: ColumnName[1] | true,
+    t: TableFunctionParamPlaceHolder[1] | true,
+    v: VarPlaceHolder[1] | true,
+    l: Literal[1] | true,
+    ll: LiteralList[1] | true,
+    d: DynaFunction[1] | $d.parameters->forAll(p | $p->readsOnlyParameters()),
+    a: Any[1] | false
+  ])
+}
+
+Class meta::relational::sqlOptimizer::tree::RelationalElementCollection
+{
+  noUnknownElement: Boolean[1];
+  elements: RelationalOperationElement[*];
+}
+
+function meta::relational::sqlOptimizer::tree::collection(noUnknownElement: Boolean[1], elements: RelationalOperationElement[*]): RelationalElementCollection[1]
+{
+  ^RelationalElementCollection(noUnknownElement = $noUnknownElement, elements = $elements)
+}
+
+// Each child is extracted once, into a list of collections that is then read twice: a mapped collection over a lazy input stays
+// lazy in compiled mode, so reading it directly would extract every child twice per level. The elements are joined in one pass,
+// because concatenating them child by child copies the elements gathered so far once per child.
+function <<access.private>> meta::relational::sqlOptimizer::tree::combined(results: RelationalElementCollection[*]): RelationalElementCollection[1]
+{
+  let extracted = $results->mapOnce(r | $r);
+  collection($extracted.noUnknownElement->forAll(known | $known), $extracted.elements);
+}
+
+function meta::relational::sqlOptimizer::tree::extractRelationalElements(elements: RelationalOperationElement[*], recurseSubQueries: Boolean[1]): RelationalElementCollection[1]
+{
+  $elements->extractRelationalElements($recurseSubQueries, true)
+}
+
+function meta::relational::sqlOptimizer::tree::extractRelationalElements(el: RelationalOperationElement[1], recurseSubQueries: Boolean[1]): RelationalElementCollection[1]
+{
+  $el->extractRelationalElements($recurseSubQueries, true)
+}
+
+function meta::relational::sqlOptimizer::tree::extractRelationalElements(rn: RelationalTreeNode[1], recurseSubQueries: Boolean[1]): RelationalElementCollection[1]
+{
+  $rn->extractRelationalElements($recurseSubQueries, true)
+}
+
+// What a select's own clauses and FROM tree contain; a select nested in them (FROM subselect, scalar subquery, CTE body) is a
+// leaf, so references made inside it are not counted as the outer select's. Under nodes the rules never rewrite (window
+// functions, FreeMarker holders, function parameters, row limits) nested selects stay expanded, as rules leave them alone.
+function meta::relational::sqlOptimizer::tree::ownElements(select: SelectSQLQuery[1]): RelationalOperationElement[*]
+{
+  if($select->isParameterValueSet(), | [], | $select->concatenate($select->selectElements(false, false)->combined().elements))
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::tree::selectElements(s: SelectSQLQuery[1], recurseSubQueries: Boolean[1], expandNestedSelects: Boolean[1]): RelationalElementCollection[*]
+{
+  let fromData = if($s.data->isNotEmpty(), | $s.data->toOne()->extractRelationalElements($recurseSubQueries, $expandNestedSelects), | []);
+  let fromOtherElements = $s.columns
+    ->concatenate($s.filteringOperation)
+    ->concatenate($s.groupBy)
+    ->concatenate($s.havingOperation)
+    ->concatenate($s.qualifyOperation)
+    ->concatenate($s.orderBy.column)
+    ->concatenate($s.commonTableExpressions)
+    ->extractRelationalElements($recurseSubQueries, $expandNestedSelects);
+  let fromRowLimits = $s.fromRow->concatenate($s.toRow)->extractRelationalElements($recurseSubQueries, true);
+  $fromData->concatenate($fromOtherElements)->concatenate($fromRowLimits);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::tree::extractRelationalElements(elements: RelationalOperationElement[*], recurseSubQueries: Boolean[1], expandNestedSelects: Boolean[1]): RelationalElementCollection[1]
+{
+  $elements->map(el | $el->extractRelationalElements($recurseSubQueries, $expandNestedSelects))->combined();
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::tree::extractRelationalElements(el: RelationalOperationElement[1], recurseSubQueries: Boolean[1], expandNestedSelects: Boolean[1]): RelationalElementCollection[1]
+{
+  let results = $el->match([
+    {t: TableAliasColumn[1] | $t.column->extractRelationalElements($recurseSubQueries, true)}, // Not recursing on alias, as it will happen from data
+    {d: DynaFunction[1] | $d.parameters->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {wc: Literal[1] | collection(true, [])},
+    {wc: Column[1] | collection(true, [])},
+    {a: TableAlias[1] | collection(true, [])}, // Not recursing on relational element, as it will happen from data
+    {a: Alias[1] | $a.relationalElement->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {s: SelectSQLQuery[1] | if($s->isParameterValueSet() || !$expandNestedSelects, | collection(true, []), | $s->selectElements($recurseSubQueries, $expandNestedSelects))},
+    {v: ViewSelectSQLQuery[1] | collection(true, [])},
+    {u: SetOperationQuery[1] | collection(true, [])},
+    {t: Table[1] | collection(true, [])},
+    {c: CommonTableExpression[1] | $c.sqlQuery->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {t: CommonTableExpressionReference[1] | collection(true, [])},
+    {a: TableAliasColumnName[1] | collection(true, [])}, // Not recursing on alias, as it will happen from data
+    {u: UnaryOperation[1] | $u.nested->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {b: BinaryOperation[1] | $b.left->concatenate($b.right)->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {va: VariableArityOperation[1] |$va.args->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {f: FreeMarkerOperationHolder[1] | $f.parameters->extractRelationalElements($recurseSubQueries, true)},
+    {wc: ColumnName[1] | collection(true, [])},
+    {wc: WindowColumn[1] | $wc.window->concatenate($wc.func)->extractRelationalElements($recurseSubQueries, true)},
+    {wc: LiteralList[1] | collection(true, [])},
+    {wc: VarPlaceHolder[1] | collection(true, [])},
+    {t: TableFunctionParamPlaceHolder[1] | $t.var->extractRelationalElements($recurseSubQueries, true)},
+    {b: BatchFilterQueryIsolation[1] | $b.op->extractRelationalElements($recurseSubQueries, true)},
+    {w: meta::relational::metamodel::Window[1] | $w.partition->concatenate($w.sortBy.sortByElement)->extractRelationalElements($recurseSubQueries, true)},
+    {js: JoinStrings[1] | $js.strings->concatenate($js.prefix)->concatenate($js.separator)->concatenate($js.suffix)->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {s: SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {s: SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->extractRelationalElements($recurseSubQueries, $expandNestedSelects)},
+    {s: SemiStructuredArrayFlatten[1] | $s.navigation->extractRelationalElements($recurseSubQueries, true)},
+    {s: SemiStructuredArrayFlattenRelation[1] | $s.navigation->extractRelationalElements($recurseSubQueries, true)},
+    {g: GenerateSeriesRelation[1] | [$g.start, $g.stop, $g.step]->extractRelationalElements($recurseSubQueries, true)},
+    {s: SemiStructuredArrayFlattenOutput[1] | $s.tableAliasColumn->extractRelationalElements($recurseSubQueries, true)},
+    {a: Any[*] | /*println('Encountered unknown element of type: ' +  $el->type()->elementToPath());*/ collection(false, []);}
+  ]);
+  collection($results.noUnknownElement->and(), $el->concatenate($results.elements));
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::tree::extractRelationalElements(rn: RelationalTreeNode[1], recurseSubQueries: Boolean[1], expandNestedSelects: Boolean[1]): RelationalElementCollection[1]
+{
+  let aliasResults = $rn.alias->extractRelationalElements($recurseSubQueries, $expandNestedSelects);
+  let relElementResults = $rn.alias.relationalElement->match([
+    u: SetOperationQuery[1] | collection(true, $u)->concatenate(if($recurseSubQueries, | $u.queries->extractRelationalElements($recurseSubQueries, $expandNestedSelects), | [])),
+    v: ViewSelectSQLQuery[1] | collection(true, $v)->concatenate(if($recurseSubQueries, | $v.selectSQLQuery->extractRelationalElements($recurseSubQueries, $expandNestedSelects), | [])),
+    s: SelectSQLQuery[1] | if($recurseSubQueries, | $s->extractRelationalElements($recurseSubQueries, $expandNestedSelects), | collection(true, $s)),
+    t: Table[1] | collection(true, $t),
+    ss: SemiStructuredArrayFlatten[1] | $ss->extractRelationalElements($recurseSubQueries, $expandNestedSelects),
+    a: Any[*] | /*println('Encountered unknown element of type: ' +  $a->type()->elementToPath());*/ collection(false, $rn.alias.relationalElement);
+  ]);
+  let joinResults = $rn->match([jtn: JoinTreeNode[1] | $jtn.join.operation->extractRelationalElements($recurseSubQueries, $expandNestedSelects), a: Any[*] | []]);
+  let childrenResults = $rn.childrenData->cast(@RelationalTreeNode)->map(c | $c->extractRelationalElements($recurseSubQueries, $expandNestedSelects));
+  $aliasResults->concatenate($relElementResults)->concatenate($joinResults)->concatenate($childrenResults)->combined();
+}
+
+function meta::relational::sqlOptimizer::tree::keepKey(name:String[1]):String[1]
+{
+  $name->columnKey()->toLower()
+}
+
+function meta::relational::sqlOptimizer::tree::columnKey(name:String[1]):String[1]
+{
+  meta::relational::functions::pureToSqlQuery::stripMatchingQuotes($name)
+}
+
+function meta::relational::sqlOptimizer::tree::outputName(column:RelationalOperationElement[1]):String[0..1]
+{
+  $column->match([
+    a:Alias[1] | $a.name,
+    t:TableAliasColumn[1] | $t.column.name,
+    c:ColumnName[1] | $c.name,
+    a:Any[1] | []
+  ])
+}
+
+function meta::relational::sqlOptimizer::tree::outputNames(column:RelationalOperationElement[1]):String[*]
+{
+  $column->match([
+    t:TableAliasColumn[1] | $t.column.name->concatenate($t.columnName),
+    r:RelationalOperationElement[1] | $r->outputName()
+  ])
+}
+
+// Like postProcessor::transformNonCached, but hands back the input itself wherever f and every child left it unchanged, so a
+// rule that changes nothing returns its input and the optimizer does not validate it again.
+function meta::relational::sqlOptimizer::tree::transformIfChanged(r: RelationalOperationElement[1], f: meta::pure::metamodel::function::Function<Any>[1]): RelationalOperationElement[1]
+{
+  $f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>)->eval($r)->match([
+    c: CommonTableExpression[1] |
+      let q = $c.sqlQuery->transformIfChanged($f);
+      if(is($q, $c.sqlQuery), | $c, | ^$c(sqlQuery = $q->cast(@SelectSQLQuery)));,
+    s: SelectSQLQuery[1] | $s->transformSelectIfChanged($f),
+    v: ViewSelectSQLQuery[1] |
+      let q = $v.selectSQLQuery->transformIfChanged($f);
+      if(is($q, $v.selectSQLQuery), | $v, | ^$v(selectSQLQuery = $q->cast(@SelectSQLQuery)));,
+    u: SetOperationQuery[1] |
+      let queries = $u.queries->mapOnce(q | $q->transformIfChanged($f));
+      if($queries->sameElements($u.queries), | $u, | ^$u(queries = $queries->cast(@SelectSQLQuery)));,
+    a: Alias[1] |
+      let e = $a.relationalElement->transformIfChanged($f);
+      if(is($e, $a.relationalElement), | $a, | ^$a(relationalElement = $e));,
+    u: UnaryOperation[1] |
+      let n = $u.nested->transformIfChanged($f);
+      if(is($n, $u.nested), | $u, | ^$u(nested = $n));,
+    b: BinaryOperation[1] |
+      let l = $b.left->transformIfChanged($f);
+      let r2 = $b.right->transformIfChanged($f);
+      if(is($l, $b.left) && is($r2, $b.right), | $b, | ^$b(left = $l, right = $r2));,
+    va: VariableArityOperation[1] |
+      let args = $va.args->mapOnce(x | $x->transformIfChanged($f));
+      if($args->sameElements($va.args), | $va, | ^$va(args = $args));,
+    d: DynaFunction[1] |
+      let parameters = $d.parameters->mapOnce(p | $p->transformIfChanged($f));
+      if($parameters->sameElements($d.parameters), | $d, | ^$d(parameters = $parameters));,
+    ac: AggregateFunctionCall[1] |
+      let func = $ac.func->transformIfChanged($f);
+      let sortBy = $ac.sortBy->mapOnce(s | let e = $s.sortByElement->transformIfChanged($f); if(is($e, $s.sortByElement), | $s, | ^$s(sortByElement = $e)););
+      let filter = $ac.filter->map(x | $x->transformIfChanged($f));
+      if(is($func, $ac.func) && $sortBy->sameElements($ac.sortBy) && $filter->sameElements($ac.filter), | $ac, | ^$ac(func = $func, sortBy = $sortBy, filter = $filter));,
+    j: JoinStrings[1] |
+      let strings = $j.strings->mapOnce(x | $x->transformIfChanged($f));
+      let prefix = $j.prefix->map(x | $x->transformIfChanged($f));
+      let separator = $j.separator->map(x | $x->transformIfChanged($f));
+      let suffix = $j.suffix->map(x | $x->transformIfChanged($f));
+      if($strings->sameElements($j.strings) && $prefix->sameElements($j.prefix) && $separator->sameElements($j.separator) && $suffix->sameElements($j.suffix),
+        | $j,
+        | ^$j(strings = $strings, prefix = $prefix, separator = $separator, suffix = $suffix));,
+    s: SemiStructuredPropertyAccess[1] |
+      let operand = $s.operand->transformIfChanged($f);
+      let property = $s.property->transformIfChanged($f);
+      let index = $s.index->map(x | $x->transformIfChanged($f));
+      if(is($operand, $s.operand) && is($property, $s.property) && $index->sameElements($s.index), | $s, | ^$s(operand = $operand, property = $property, index = $index));,
+    s: SemiStructuredArrayElementAccess[1] |
+      let operand = $s.operand->transformIfChanged($f);
+      let index = $s.index->transformIfChanged($f);
+      if(is($operand, $s.operand) && is($index, $s.index), | $s, | ^$s(operand = $operand, index = $index));,
+    rel: RelationalOperationElement[1] | $rel
+  ])
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::tree::transformSelectIfChanged(s: SelectSQLQuery[1], f: meta::pure::metamodel::function::Function<Any>[1]): SelectSQLQuery[1]
+{
+  let data = $s.data->mapOnce(d | $d->transformNodeIfChanged([], false, $f));
+  let columns = $s.columns->mapOnce(c | $c->transformIfChanged($f));
+  let filteringOperation = $s.filteringOperation->mapOnce(c | $c->transformIfChanged($f));
+  let groupBy = $s.groupBy->mapOnce(c | $c->transformIfChanged($f));
+  let havingOperation = $s.havingOperation->mapOnce(c | $c->transformIfChanged($f));
+  let qualifyOperation = $s.qualifyOperation->mapOnce(c | $c->transformIfChanged($f));
+  let orderBy = $s.orderBy->mapOnce(o | let c = $o.column->transformIfChanged($f); if(is($c, $o.column), | $o, | ^$o(column = $c)););
+  let commonTableExpressions = $s.commonTableExpressions->mapOnce(c | $c->transformIfChanged($f));
+  if($data->sameElements($s.data) && $columns->sameElements($s.columns) && $filteringOperation->sameElements($s.filteringOperation)
+       && $groupBy->sameElements($s.groupBy) && $havingOperation->sameElements($s.havingOperation) && $qualifyOperation->sameElements($s.qualifyOperation)
+       && $orderBy->sameElements($s.orderBy) && $commonTableExpressions->sameElements($s.commonTableExpressions),
+    | $s,
+    | let rebuilt = ^$s(data = $data->first()->cast(@RootJoinTreeNode), columns = $columns, filteringOperation = $filteringOperation, groupBy = $groupBy,
+                        havingOperation = $havingOperation, qualifyOperation = $qualifyOperation, orderBy = $orderBy,
+                        commonTableExpressions = $commonTableExpressions->cast(@CommonTableExpression));
+      if($s.leftSideOfFilter->isEmpty(), | $rebuilt, | ^$rebuilt(leftSideOfFilter = $s.leftSideOfFilter->toOne()->findOneNode($s.data->toOne(), $rebuilt.data->toOne())));
+  );
+}
+
+// A join node is rebuilt when its parent alias was, so its join keeps pointing at the aliases that are in the tree.
+function <<access.private>> meta::relational::sqlOptimizer::tree::transformNodeIfChanged(node: RelationalTreeNode[1], parentAlias: TableAlias[0..1], parentChanged: Boolean[1], f: meta::pure::metamodel::function::Function<Any>[1]): RelationalTreeNode[1]
+{
+  let alias = $node.alias->transformIfChanged($f)->cast(@TableAlias);
+  let aliasChanged = !is($alias, $node.alias);
+  let children = $node.childrenData->cast(@JoinTreeNode)->mapOnce(c | $c->transformNodeIfChanged($alias, $aliasChanged, $f));
+  $node->match([
+    j: JoinTreeNode[1] |
+      let join = $j.join;
+      let operation = $join.operation->transformIfChanged($f);
+      if(!$parentChanged && !$aliasChanged && is($operation, $join.operation) && $children->sameElements($j.childrenData) && $j->joinPointsAt($parentAlias, $alias),
+        | $j,
+        | let target = if($join.target->isEmpty(), | [], | if($join.target == $j.alias, | $alias, | $parentAlias));
+          ^$j(join = ^$join(operation = $operation->cast(@Operation), aliases = [pair($parentAlias->toOne(), $alias), pair($alias, $parentAlias->toOne())], target = $target),
+              alias = $alias, childrenData = $children);
+      );,
+    r: RelationalTreeNode[1] |
+      if(!$aliasChanged && $children->sameElements($r.childrenData), | $r, | ^$r(alias = $alias, childrenData = $children))
+  ]);
+}
+
+function <<access.private>> meta::relational::sqlOptimizer::tree::joinPointsAt(node: JoinTreeNode[1], parentAlias: TableAlias[0..1], alias: TableAlias[1]): Boolean[1]
+{
+  let aliases = $node.join.aliases;
+  $parentAlias->isNotEmpty() && ($aliases->size() == 2)
+    && is($aliases->at(0).first, $parentAlias->toOne()) && is($aliases->at(0).second, $alias)
+    && is($aliases->at(1).first, $alias) && is($aliases->at(1).second, $parentAlias->toOne())
+    && ($node.join.target->isEmpty() || is($node.join.target->toOne(), $alias) || is($node.join.target->toOne(), $parentAlias->toOne()));
+}
+
+// Folded so each element is transformed once: a map over a lazy input stays lazy in compiled mode and would re-run on every read.
+function meta::relational::sqlOptimizer::tree::mapOnce<T,U>(values: T[*], f: meta::pure::metamodel::function::Function<{T[1]->U[1]}>[1]): U[*]
+{
+  $values->fold({v, acc | ^$acc(values = $acc.values->concatenate($f->eval($v)))}, ^List<U>()).values
+}
+
+function meta::relational::sqlOptimizer::tree::sameElements(a: Any[*], b: Any[*]): Boolean[1]
+{
+  ($a->size() == $b->size()) && $a->zip($b)->forAll(p | is($p.first, $p.second))
+}

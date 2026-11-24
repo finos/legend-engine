@@ -30,6 +30,76 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-legendCompiler-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-sqlDialectTranslation-pure</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-compiler</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-par</artifactId>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
+                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
+                    <repositories>
+                        <repository>core_relational_memsql_pct</repository>
+                    </repositories>
+                    <extraRepositories>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_relational_memsql_pct.definition.json
+                        </extraRepository>
+                    </extraRepositories>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build-pure-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-generation-java</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>build-pure-compiled-jar</goal>
+                        </goals>
+                        <configuration>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
+                            <generationType>modular</generationType>
+                            <useSingleDir>true</useSingleDir>
+                            <repositories>
+                                <repository>core_relational_memsql_pct</repository>
+                            </repositories>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-pct</artifactId>
                 <configuration>
@@ -118,6 +188,46 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-legendCompiler-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-sqlDialectTranslation-pure</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -137,12 +247,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relationalStore-PCT</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -157,7 +265,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -181,20 +288,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -229,11 +322,6 @@
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
