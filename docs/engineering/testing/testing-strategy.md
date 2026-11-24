@@ -179,9 +179,12 @@ mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-
 mvn test -P pct-cloud-test
 ```
 
-Pull requests and master pushes do not activate this profile. It runs in CI on release builds and on the
-daily scheduled `Build CI` run of `master`. The scheduled run also generates the PCT report and publishes it, together with the SQL
-parity docs, to the Legend docs site.
+The profile does two separate things: it enables the cloud PCT suites under surefire, and it generates
+those adapters' PCT reports, which are derived from the expected-failure manifests rather than from test
+results. Pull requests and master pushes do not activate it. Release builds activate it for the build
+job only, so the released jars carry the cloud adapters' reports while the cloud PCT suites do not run.
+The cloud PCT suites run in CI only on the daily scheduled `Build CI` run of `master`, which also
+generates the PCT report and publishes it, together with the SQL parity docs, to the Legend docs site.
 
 **Run a single PCT test function across all registered stores:**
 

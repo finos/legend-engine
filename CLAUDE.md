@@ -141,7 +141,7 @@ test runner) fails on bypasses. Assert result rows alongside the SQL wherever th
 
 ### PCT (Pure Compatibility Tests)
 
-PCT is how cross-store behavioural parity is enforced. Pure functions marked `<<PCT.test>>` run against every registered store. Default-profile stores (run on every PR): **H2, DuckDB, Java binding**. Cloud stores (`pct-cloud-test` profile, requires secrets; in CI only release builds and the daily scheduled build enable it): Postgres, Snowflake, BigQuery, Databricks, Spanner, MemSQL.
+PCT is how cross-store behavioural parity is enforced. Pure functions marked `<<PCT.test>>` run against every registered store. Default-profile stores (run on every PR): **H2, DuckDB, Java binding**. Cloud stores (`pct-cloud-test` profile, requires secrets; in CI the cloud suites run only on the daily scheduled build; release builds enable the profile at build time only, to generate those adapters' PCT reports): Postgres, Snowflake, BigQuery, Databricks, Spanner, MemSQL.
 
 Run a single dialect's PCT suite:
 ```bash
