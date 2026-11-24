@@ -338,12 +338,12 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 // to scope a query to its mapping and runtime must survive the recompile instead of being re-applied at plan time.
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1], removeFrom:Boolean[1]):Function<Any>[1]
 {
-  sqlToPure($query, $sources, $extraPackages, $scopeVariables, false, getLambdaCompiler($compiler, $removeFrom));
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, false, false, getLambdaCompiler($compiler, $removeFrom));
 }
 
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], removeFrom:Boolean[1]):Function<Any>[1]
 {
-  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, $removeFrom)});
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true, false, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, $removeFrom)});
 }
 
 function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
