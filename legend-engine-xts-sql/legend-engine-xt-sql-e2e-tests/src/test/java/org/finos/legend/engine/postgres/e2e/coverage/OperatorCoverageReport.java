@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.finos.legend.engine.postgres.e2e.ParityPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +26,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Generates operator coverage reports in JSON and Markdown format, mirroring
@@ -39,6 +42,8 @@ public class OperatorCoverageReport
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(OperatorCoverageReport.class);
     private static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private static final Set<ParityPath> LEGACY_PATHS = EnumSet.of(ParityPath.TDS, ParityPath.RELATION);
+    private static final Set<ParityPath> GRAMMAR_ONLY = EnumSet.of(ParityPath.GRAMMAR);
 
     public void generate(Map<String, List<OperatorCatalogExtractor.PgOperator>> catalog, String outputDir, File parityReportFile) throws IOException
     {
@@ -48,13 +53,13 @@ public class OperatorCoverageReport
         printConsoleSummary(catalog);
     }
 
-    private static int[] countStatuses(Iterable<OperatorCatalogExtractor.PgOperator> ops, boolean tds)
+    private static int[] countStatuses(Iterable<OperatorCatalogExtractor.PgOperator> ops, ParityPath path)
     {
         // [pass, partial, fail, error, untested]
         int[] c = new int[5];
         for (OperatorCatalogExtractor.PgOperator op : ops)
         {
-            String s = tds ? op.tdsStatus : op.relStatus;
+            String s = statusOf(op, path);
             switch (s)
             {
                 case "PASS":
@@ -79,30 +84,86 @@ public class OperatorCoverageReport
         return c;
     }
 
+    private static String statusOf(OperatorCatalogExtractor.PgOperator op, ParityPath path)
+    {
+        switch (path)
+        {
+            case TDS:
+                return op.tdsStatus;
+            case RELATION:
+                return op.relStatus;
+            default:
+                return op.grammarStatus;
+        }
+    }
+
+    private static int[] passFailError(OperatorCoverageMapper.SignatureCoverage coverage, ParityPath path)
+    {
+        switch (path)
+        {
+            case TDS:
+                return new int[] {coverage.tdsPass, coverage.tdsFail, coverage.tdsError};
+            case RELATION:
+                return new int[] {coverage.relPass, coverage.relFail, coverage.relError};
+            default:
+                return new int[] {coverage.grammarPass, coverage.grammarFail, coverage.grammarError};
+        }
+    }
+
+    private static int skipped(OperatorCoverageMapper.SignatureCoverage coverage, ParityPath path)
+    {
+        switch (path)
+        {
+            case TDS:
+                return coverage.tdsSkip;
+            case RELATION:
+                return coverage.relSkip;
+            default:
+                return coverage.grammarSkip;
+        }
+    }
+
+    private static void markUnsupported(OperatorCatalogExtractor.PgOperator op)
+    {
+        op.tdsStatus = "NOT_APPLICABLE";
+        op.relStatus = "NOT_APPLICABLE";
+    }
+
+    private static int[][] countStatusesByPath(Map<String, List<OperatorCatalogExtractor.PgOperator>> catalog)
+    {
+        int[][] counts = new int[ParityPath.values().length][5];
+        for (List<OperatorCatalogExtractor.PgOperator> ops : catalog.values())
+        {
+            for (ParityPath path : ParityPath.values())
+            {
+                int[] c = countStatuses(ops, path);
+                for (int i = 0; i < 5; i++)
+                {
+                    counts[path.ordinal()][i] += c[i];
+                }
+            }
+        }
+        return counts;
+    }
+
     private void generateJson(Map<String, List<OperatorCatalogExtractor.PgOperator>> catalog, String path) throws IOException
     {
         ObjectNode root = MAPPER.createObjectNode();
 
         int total = 0;
-        int[] tds = new int[5];
-        int[] rel = new int[5];
         for (List<OperatorCatalogExtractor.PgOperator> ops : catalog.values())
         {
             total += ops.size();
-            int[] t = countStatuses(ops, true);
-            int[] r = countStatuses(ops, false);
-            for (int i = 0; i < 5; i++)
-            {
-                tds[i] += t[i];
-                rel[i] += r[i];
-            }
         }
+        int[][] countsByPath = countStatusesByPath(catalog);
 
         ObjectNode summary = root.putObject("summary");
         summary.put("total", total);
         summary.put("pg_docs_version", OperatorCatalogExtractor.PG_DOCS_VERSION);
-        putPathSummary(summary.putObject("tds"), tds, total);
-        putPathSummary(summary.putObject("relation"), rel, total);
+        for (ParityPath parityPath : ParityPath.values())
+        {
+            putPathSummary(summary.putObject(parityPath.reportKey()), countsByPath[parityPath.ordinal()], total);
+        }
 
         ArrayNode categories = root.putArray("categories");
         for (Map.Entry<String, List<OperatorCatalogExtractor.PgOperator>> entry : catalog.entrySet())
@@ -122,20 +183,18 @@ public class OperatorCoverageReport
                 opNode.put("signature", op.signature);
                 opNode.put("kind", op.kind);
 
-                ObjectNode tdsNode = opNode.putObject("tds");
-                tdsNode.put("status", op.tdsStatus);
-                ObjectNode relNode = opNode.putObject("relation");
-                relNode.put("status", op.relStatus);
-                if (op.coverage != null)
+                for (ParityPath parityPath : ParityPath.values())
                 {
-                    tdsNode.put("pass", op.coverage.tdsPass);
-                    tdsNode.put("fail", op.coverage.tdsFail);
-                    tdsNode.put("error", op.coverage.tdsError);
-                    tdsNode.put("total", op.coverage.total);
-                    relNode.put("pass", op.coverage.relPass);
-                    relNode.put("fail", op.coverage.relFail);
-                    relNode.put("error", op.coverage.relError);
-                    relNode.put("total", op.coverage.total);
+                    ObjectNode pathNode = opNode.putObject(parityPath.reportKey());
+                    pathNode.put("status", statusOf(op, parityPath));
+                    if (op.coverage != null)
+                    {
+                        int[] passFailError = passFailError(op.coverage, parityPath);
+                        pathNode.put("pass", passFailError[0]);
+                        pathNode.put("fail", passFailError[1]);
+                        pathNode.put("error", passFailError[2]);
+                        pathNode.put("total", op.coverage.total);
+                    }
                 }
                 if (!op.notes.isEmpty())
                 {
@@ -170,11 +229,10 @@ public class OperatorCoverageReport
         {
             for (OperatorCatalogExtractor.PgOperator op : ops)
             {
-                String errCat = getErrorCategory(op, failureMap);
+                String errCat = getErrorCategory(op, failureMap, LEGACY_PATHS);
                 if (errCat.contains(ErrorCategorizer.FUNCTION_NOT_SUPPORTED))
                 {
-                    op.tdsStatus = "NOT_APPLICABLE";
-                    op.relStatus = "NOT_APPLICABLE";
+                    markUnsupported(op);
                     if (op.notes.isEmpty())
                     {
                         op.notes = "Operator not supported";
@@ -182,11 +240,23 @@ public class OperatorCoverageReport
                 }
                 else if (errCat.contains(ErrorCategorizer.UNSUPPORTED_SYNTAX))
                 {
-                    op.tdsStatus = "NOT_APPLICABLE";
-                    op.relStatus = "NOT_APPLICABLE";
+                    markUnsupported(op);
                     if (op.notes.isEmpty())
                     {
                         op.notes = "Unsupported feature";
+                    }
+                }
+
+                String grammarCat = getErrorCategory(op, failureMap, GRAMMAR_ONLY);
+                if (grammarCat.contains(ErrorCategorizer.FUNCTION_NOT_SUPPORTED)
+                        || grammarCat.contains(ErrorCategorizer.UNSUPPORTED_SYNTAX))
+                {
+                    op.grammarStatus = "NOT_APPLICABLE";
+                    if (op.notes.isEmpty())
+                    {
+                        op.notes = grammarCat.contains(ErrorCategorizer.FUNCTION_NOT_SUPPORTED)
+                                ? "Grammar: operator not supported"
+                                : "Grammar: unsupported feature";
                     }
                 }
             }
@@ -200,25 +270,19 @@ public class OperatorCoverageReport
 
         // === 1. Summary ===
         int total = 0;
-        int[] tds = new int[5];
-        int[] rel = new int[5];
         for (List<OperatorCatalogExtractor.PgOperator> ops : catalog.values())
         {
             total += ops.size();
-            int[] t = countStatuses(ops, true);
-            int[] r = countStatuses(ops, false);
-            for (int i = 0; i < 5; i++)
-            {
-                tds[i] += t[i];
-                rel[i] += r[i];
-            }
         }
+        int[][] countsByPath = countStatusesByPath(catalog);
 
         md.append("## Summary\n\n");
         md.append("| Path | PASS | PARTIAL | FAIL | ERROR | UNTESTED | UNSUPPORTED | Total |\n");
         md.append("|---|---|---|---|---|---|---|---|\n");
-        appendSummaryRow(md, "TDS", tds, total);
-        appendSummaryRow(md, "Relation", rel, total);
+        for (ParityPath parityPath : ParityPath.values())
+        {
+            appendSummaryRow(md, parityPath.label(), countsByPath[parityPath.ordinal()], total);
+        }
         md.append("\n---\n\n");
 
         // === 2. Error Categories ===
@@ -234,8 +298,8 @@ public class OperatorCoverageReport
 
         // === 3. Category Summary ===
         md.append("## Category Summary\n\n");
-        md.append("| Category | Total | TDS PASS | TDS PARTIAL | TDS FAIL | TDS ERROR | TDS UNTESTED | Rel PASS | Rel PARTIAL | Rel FAIL | Rel ERROR | Rel UNTESTED |\n");
-        md.append("|---|---|---|---|---|---|---|---|---|---|---|---|\n");
+        md.append("| Category | Total | TDS PASS | TDS PARTIAL | TDS FAIL | TDS ERROR | TDS UNTESTED | Rel PASS | Rel PARTIAL | Rel FAIL | Rel ERROR | Rel UNTESTED | Grammar PASS | Grammar PARTIAL | Grammar FAIL | Grammar ERROR | Grammar UNTESTED |\n");
+        md.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n");
         for (Map.Entry<String, List<OperatorCatalogExtractor.PgOperator>> entry : catalog.entrySet())
         {
             if (entry.getValue().isEmpty())
@@ -243,12 +307,14 @@ public class OperatorCoverageReport
                 continue;
             }
             int ct = entry.getValue().size();
-            int[] t = countStatuses(entry.getValue(), true);
-            int[] r = countStatuses(entry.getValue(), false);
-            md.append(String.format("| %s | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
+            int[] t = countStatuses(entry.getValue(), ParityPath.TDS);
+            int[] r = countStatuses(entry.getValue(), ParityPath.RELATION);
+            int[] g = countStatuses(entry.getValue(), ParityPath.GRAMMAR);
+            md.append(String.format("| %s | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
                     anchorLink(entry.getKey()), ct,
                     t[0], t[1], t[2], t[3], t[4],
-                    r[0], r[1], r[2], r[3], r[4]));
+                    r[0], r[1], r[2], r[3], r[4],
+                    g[0], g[1], g[2], g[3], g[4]));
         }
         md.append("\n---\n\n");
 
@@ -268,21 +334,21 @@ public class OperatorCoverageReport
                 md.append("Reference: [PostgreSQL ").append(OperatorCatalogExtractor.PG_DOCS_VERSION)
                         .append(" docs](").append(docUrl).append(")\n\n");
             }
-            md.append("| | Operator | Signature | TDS | Relation | Error Category | Notes |\n");
-            md.append("|--|---|---|---|---|---|---|\n");
+            md.append("| | Operator | Signature | TDS | Relation | Grammar | Error Category | Notes |\n");
+            md.append("|--|---|---|---|---|---|---|---|\n");
             for (OperatorCatalogExtractor.PgOperator op : entry.getValue())
             {
-                int tdsTotal = op.coverage == null ? 0 : op.coverage.total - op.coverage.tdsSkip;
-                int relTotal = op.coverage == null ? 0 : op.coverage.total - op.coverage.relSkip;
-                int tdsPass = op.coverage == null ? 0 : op.coverage.tdsPass;
-                int relPass = op.coverage == null ? 0 : op.coverage.relPass;
                 String errCat = getErrorCategory(op, failureMap);
                 String errLink = getErrorLink(op, failureMap);
-                md.append("| ").append(CoverageReportSupport.rowColour(op.tdsStatus, op.relStatus))
-                        .append(" | `").append(op.name).append("` | `").append(op.signature).append("` | ")
-                        .append(CoverageReportSupport.statusToLabel(op.tdsStatus, tdsPass, tdsTotal)).append(" | ")
-                        .append(CoverageReportSupport.statusToLabel(op.relStatus, relPass, relTotal)).append(" | ")
-                        .append(errCat.isEmpty() ? "" : errLink).append(" | ")
+                md.append("| ").append(CoverageReportSupport.rowColour(op.tdsStatus, op.relStatus, op.grammarStatus))
+                        .append(" | `").append(op.name).append("` | `").append(op.signature).append("` | ");
+                for (ParityPath parityPath : ParityPath.values())
+                {
+                    int executed = op.coverage == null ? 0 : op.coverage.total - skipped(op.coverage, parityPath);
+                    int pass = op.coverage == null ? 0 : passFailError(op.coverage, parityPath)[0];
+                    md.append(CoverageReportSupport.statusToLabel(statusOf(op, parityPath), pass, executed)).append(" | ");
+                }
+                md.append(errCat.isEmpty() ? "" : errLink).append(" | ")
                         .append(op.notes).append(" |\n");
 
                 if (op.coverage != null)
@@ -306,26 +372,31 @@ public class OperatorCoverageReport
 
     private static String getErrorCategory(OperatorCatalogExtractor.PgOperator op, Map<String, CoverageReportSupport.FailureInfo> failureMap)
     {
-        if ("PASS".equals(op.tdsStatus) && "PASS".equals(op.relStatus))
+        return getErrorCategory(op, failureMap, EnumSet.allOf(ParityPath.class));
+    }
+
+    private static String getErrorCategory(OperatorCatalogExtractor.PgOperator op, Map<String, CoverageReportSupport.FailureInfo> failureMap, Set<ParityPath> paths)
+    {
+        if (paths.stream().allMatch(path -> "PASS".equals(statusOf(op, path))))
         {
             return "";
         }
-        if ("UNTESTED".equals(op.tdsStatus) && "UNTESTED".equals(op.relStatus))
+        if (paths.stream().allMatch(path -> "UNTESTED".equals(statusOf(op, path))))
         {
             return "";
         }
         List<FunctionCoverageMapper.TestResultEntry> testDetails = op.coverage != null ? op.coverage.testDetails : null;
-        java.util.LinkedHashSet<String> categories = CoverageReportSupport.categoriesFor(testDetails, failureMap);
+        java.util.LinkedHashSet<String> categories = CoverageReportSupport.categoriesFor(testDetails, failureMap, paths);
         if (!categories.isEmpty())
         {
             return String.join(", ", categories);
         }
         // Infer from status when no parity-report detail is available
-        if ("ERROR".equals(op.tdsStatus) || "ERROR".equals(op.relStatus))
+        if (paths.stream().anyMatch(path -> "ERROR".equals(statusOf(op, path))))
         {
             return ErrorCategorizer.MISC;
         }
-        if ("FAIL".equals(op.tdsStatus) || "FAIL".equals(op.relStatus))
+        if (paths.stream().anyMatch(path -> "FAIL".equals(statusOf(op, path))))
         {
             return ErrorCategorizer.RESULT_MISMATCH;
         }
@@ -344,39 +415,21 @@ public class OperatorCoverageReport
 
     private static void categorizeOperator(OperatorCatalogExtractor.PgOperator op, Map<String, CoverageReportSupport.FailureInfo> failureMap, Map<String, int[]> counts)
     {
-        String tdsCategory = null;
-        String relCategory = null;
-
-        if (op.coverage != null)
+        if (op.coverage == null)
+        {
+            return;
+        }
+        for (ParityPath path : ParityPath.values())
         {
             for (FunctionCoverageMapper.TestResultEntry te : op.coverage.testDetails)
             {
-                if (tdsCategory == null)
+                CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, path));
+                if (fi != null)
                 {
-                    CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
-                    if (fi != null)
-                    {
-                        tdsCategory = fi.category;
-                    }
-                }
-                if (relCategory == null)
-                {
-                    CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|Relation");
-                    if (fi != null)
-                    {
-                        relCategory = fi.category;
-                    }
+                    counts.computeIfAbsent(fi.category, k -> new int[ParityPath.values().length])[path.ordinal()]++;
+                    break;
                 }
             }
-        }
-
-        if (tdsCategory != null)
-        {
-            counts.computeIfAbsent(tdsCategory, k -> new int[2])[0]++;
-        }
-        if (relCategory != null)
-        {
-            counts.computeIfAbsent(relCategory, k -> new int[2])[1]++;
         }
     }
 

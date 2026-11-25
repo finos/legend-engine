@@ -419,7 +419,7 @@ public final class SqlE2ERunner
     }
 
     /**
-     * Every matching corpus id crossed with both execution paths, each fully resolved - the atomic
+     * Every matching corpus id crossed with every execution path, each fully resolved - the atomic
      * unit executeSQLE2ETest/runOneCase operate on. Skipped cases are still listed: the skip itself
      * is part of what gets exercised (reported as SKIP, not silently dropped).
      */
@@ -428,8 +428,10 @@ public final class SqlE2ERunner
         List<CaseRef> out = new ArrayList<>();
         for (String id : listIds(filter))
         {
-            out.add(resolveCaseRef(id, "TDS"));
-            out.add(resolveCaseRef(id, "Relation"));
+            for (ParityPath path : ParityPath.values())
+            {
+                out.add(resolveCaseRef(id, path.label()));
+            }
         }
         return out;
     }
@@ -449,7 +451,8 @@ public final class SqlE2ERunner
             throw new IllegalStateException("Unknown SQL e2e case id: " + corpusId);
         }
         TestCaseLoader.TestCase tc = entry.testCase;
-        String expectedStatus = "TDS".equals(path) ? tc.expected_tds_status : tc.expected_rel_status;
+        ParityPath parityPath = ParityPath.fromLabel(path);
+        String expectedStatus = parityPath.expectedStatus(tc);
         boolean hasOrderBy = tc.sql != null && tc.sql.toUpperCase().contains("ORDER BY");
 
         if (tc.skip != null)
@@ -475,12 +478,11 @@ public final class SqlE2ERunner
             return new CaseRef(corpusId, path, null, hasOrderBy, null, bugReason, null, expectedStatus);
         }
 
-        String prefix = "TDS".equals(path) ? "tds" : "rel";
         try
         {
             String rewrittenSql = Boolean.TRUE.equals(tc.join_func)
-                    ? "SELECT * FROM func('e2e::" + prefix + "_person_with_dept') ORDER BY \"name\""
-                    : new AstFromRewriter(prefix, this.knownTables).rewrite(tc.sql);
+                    ? "SELECT * FROM " + parityPath.joinFunctionCall() + " ORDER BY \"name\""
+                    : new AstFromRewriter(parityPath, this.knownTables).rewrite(tc.sql);
             return new CaseRef(corpusId, path, rewrittenSql, hasOrderBy, null, null, null, expectedStatus);
         }
         catch (Exception e)
@@ -490,8 +492,8 @@ public final class SqlE2ERunner
     }
 
     /**
-     * A corpus id crossed with one execution path, fully resolved. {@code path} is "TDS" or
-     * "Relation", kept as a plain string since this class has no Pure dependency.
+     * A corpus id crossed with one execution path, fully resolved. {@code path} is a
+     * {@link ParityPath} label, kept as a plain string since this class has no Pure dependency.
      */
     public static final class CaseRef
     {
@@ -597,7 +599,7 @@ public final class SqlE2ERunner
      */
     public AdhocPrep prepareAdhoc(String sql, String path)
     {
-        String prefix = "TDS".equals(path) ? "tds" : "rel";
+        ParityPath parityPath = ParityPath.fromLabel(path);
 
         ResultMatrix reference = null;
         String referenceError = null;
@@ -614,7 +616,7 @@ public final class SqlE2ERunner
         String rewriteError = null;
         try
         {
-            rewrittenSql = new AstFromRewriter(prefix, this.knownTables).rewrite(sql);
+            rewrittenSql = new AstFromRewriter(parityPath, this.knownTables).rewrite(sql);
         }
         catch (Exception e)
         {
@@ -622,13 +624,12 @@ public final class SqlE2ERunner
         }
 
         boolean hasOrderBy = sql.toUpperCase().contains("ORDER BY");
-        return new AdhocPrep(path, prefix, hasOrderBy, rewrittenSql, rewriteError, reference, referenceError);
+        return new AdhocPrep(path, hasOrderBy, rewrittenSql, rewriteError, reference, referenceError);
     }
 
     public static final class AdhocPrep
     {
         public final String path;
-        public final String prefix;
         public final boolean hasOrderBy;
         /** Null if rewriteError is set. */
         public final String rewrittenSql;
@@ -637,11 +638,10 @@ public final class SqlE2ERunner
         public final ResultMatrix reference;
         public final String referenceError;
 
-        private AdhocPrep(String path, String prefix, boolean hasOrderBy, String rewrittenSql, String rewriteError,
+        private AdhocPrep(String path, boolean hasOrderBy, String rewrittenSql, String rewriteError,
                            ResultMatrix reference, String referenceError)
         {
             this.path = path;
-            this.prefix = prefix;
             this.hasOrderBy = hasOrderBy;
             this.rewrittenSql = rewrittenSql;
             this.rewriteError = rewriteError;

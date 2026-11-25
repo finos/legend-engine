@@ -15,8 +15,6 @@
 package org.finos.legend.engine.query.sql.e2e.compiled;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.collections.api.factory.Lists;
@@ -213,11 +211,11 @@ public class SqlE2ECompiledExtension extends BaseCompiledExtension
         }
     }
 
-    /** Runs sql against Legend for each requested path (Both means TDS and Relation both run). */
+    /** Runs sql against Legend for each requested path (Both and All expand via SqlE2ENativeHelper.adhocPaths). */
     public static List<CoreInstance> executeAdhocSQL(String sql, CoreInstance pathEnum, ExecutionSupport es)
     {
         String pathName = pathEnum.getName();
-        List<String> paths = "Both".equals(pathName) ? Arrays.asList("TDS", "Relation") : Collections.singletonList(pathName);
+        List<String> paths = SqlE2ENativeHelper.adhocPaths(pathName);
 
         CompiledProcessorSupport processorSupport = ((CompiledExecutionSupport) es).getProcessorSupport();
         CoreInstance runOneAdhocLegendFn = processorSupport.package_getByUserPath(SqlE2ENativeHelper.RUN_ONE_ADHOC_LEGEND);
@@ -240,7 +238,7 @@ public class SqlE2ECompiledExtension extends BaseCompiledExtension
             {
                 try
                 {
-                    legendResultJson = fn.execute(Lists.mutable.with(prep.rewrittenSql, prep.prefix, connInstance), es);
+                    legendResultJson = fn.execute(Lists.mutable.with(prep.rewrittenSql, prep.path, connInstance), es);
                 }
                 catch (Throwable t)
                 {

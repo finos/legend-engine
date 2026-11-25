@@ -10,6 +10,7 @@ tests:
   signature: "AND(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: compound__or__int_comparisons
   sql: SELECT id FROM numbers WHERE int_val < -100 OR int_val > 100 ORDER BY id
@@ -17,6 +18,7 @@ tests:
   signature: "OR(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: compound__not__comparison
   sql: SELECT id FROM numbers WHERE NOT (int_val > 0) AND int_val IS NOT NULL ORDER BY id
@@ -24,6 +26,7 @@ tests:
   signature: "NOT(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 # ---------------------------------------------------------------------------
 # AND truth table (three-valued logic) — PostgreSQL 16 docs, Table 9.1
@@ -36,6 +39,7 @@ tests:
   signature: "AND(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: and__true_false
   sql: SELECT (true AND false) AS result FROM persons WHERE id = 1
@@ -43,6 +47,7 @@ tests:
   signature: "AND(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: and__false_false
   sql: SELECT (false AND false) AS result FROM persons WHERE id = 1
@@ -50,6 +55,7 @@ tests:
   signature: "AND(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: and__true_null
   sql: SELECT (true AND CAST(NULL AS BOOLEAN)) AS result FROM persons WHERE id = 1
@@ -57,6 +63,7 @@ tests:
   signature: "AND(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: and__false_null
   sql: SELECT (false AND CAST(NULL AS BOOLEAN)) AS result FROM persons WHERE id = 1
@@ -64,6 +71,7 @@ tests:
   signature: "AND(boolean, boolean) → boolean"
   expected_tds_status: FAIL
   expected_rel_status: FAIL
+  expected_grammar_status: FAIL
 
 - id: and__null_null
   sql: SELECT (CAST(NULL AS BOOLEAN) AND CAST(NULL AS BOOLEAN)) AS result FROM persons WHERE id = 1
@@ -71,6 +79,7 @@ tests:
   signature: "AND(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 # ---------------------------------------------------------------------------
 # OR truth table (three-valued logic) — PostgreSQL 16 docs, Table 9.1
@@ -83,6 +92,7 @@ tests:
   signature: "OR(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: or__true_false
   sql: SELECT (true OR false) AS result FROM persons WHERE id = 1
@@ -90,6 +100,7 @@ tests:
   signature: "OR(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: or__false_false
   sql: SELECT (false OR false) AS result FROM persons WHERE id = 1
@@ -97,6 +108,7 @@ tests:
   signature: "OR(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: or__true_null
   sql: SELECT (true OR CAST(NULL AS BOOLEAN)) AS result FROM persons WHERE id = 1
@@ -104,6 +116,7 @@ tests:
   signature: "OR(boolean, boolean) → boolean"
   expected_tds_status: FAIL
   expected_rel_status: FAIL
+  expected_grammar_status: FAIL
 
 - id: or__false_null
   sql: SELECT (false OR CAST(NULL AS BOOLEAN)) AS result FROM persons WHERE id = 1
@@ -111,6 +124,7 @@ tests:
   signature: "OR(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: or__null_null
   sql: SELECT (CAST(NULL AS BOOLEAN) OR CAST(NULL AS BOOLEAN)) AS result FROM persons WHERE id = 1
@@ -118,6 +132,7 @@ tests:
   signature: "OR(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 # ---------------------------------------------------------------------------
 # NOT truth table — PostgreSQL 16 docs, Table 9.1
@@ -130,6 +145,7 @@ tests:
   signature: "NOT(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: not__false
   sql: SELECT (NOT false) AS result FROM persons WHERE id = 1
@@ -137,6 +153,7 @@ tests:
   signature: "NOT(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 - id: not__null
   sql: SELECT (NOT CAST(NULL AS BOOLEAN)) AS result FROM persons WHERE id = 1
@@ -144,6 +161,7 @@ tests:
   signature: "NOT(boolean, boolean) → boolean"
   expected_tds_status: PASS
   expected_rel_status: PASS
+  expected_grammar_status: PASS
 
 # ---------------------------------------------------------------------------
 # Comparison in SELECT expressions (computed boolean columns)

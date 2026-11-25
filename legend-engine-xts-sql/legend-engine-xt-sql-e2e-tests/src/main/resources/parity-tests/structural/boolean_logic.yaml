@@ -6,6 +6,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: bool_literal_false
     sql: "SELECT name FROM persons WHERE FALSE ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: bool_select_literal
     sql: "SELECT name, TRUE AS always_true, FALSE AS always_false FROM persons WHERE id <= 3 ORDER BY 1"
@@ -20,6 +22,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Boolean column without explicit comparison
   - id: bool_column_implicit
@@ -28,6 +31,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bool_column_not
     sql: "SELECT name FROM persons WHERE NOT active ORDER BY 1"
@@ -35,6 +39,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # IS TRUE / IS FALSE / IS UNKNOWN
   - id: bool_is_true
@@ -43,6 +48,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bool_is_false
     sql: "SELECT name FROM persons WHERE active IS FALSE ORDER BY 1"
@@ -50,6 +56,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bool_is_not_true
     sql: "SELECT name FROM persons WHERE active IS NOT TRUE ORDER BY 1"
@@ -57,6 +64,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: bool_is_not_false
     sql: "SELECT name FROM persons WHERE active IS NOT FALSE ORDER BY 1"
@@ -64,6 +72,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Boolean expressions in SELECT
   - id: bool_expression_select
@@ -72,6 +81,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: bool_comparison_select
     sql: "SELECT name, (age > 30 AND salary > 50000) AS senior_high FROM persons WHERE age IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
@@ -79,6 +89,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Boolean with NULL (three-valued logic)
   - id: bool_null_and_true
@@ -87,6 +98,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: bool_null_and_false
     sql: "SELECT (NULL AND FALSE) AS result FROM persons WHERE id = 1"
@@ -94,6 +106,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL
 
   - id: bool_null_or_true
     sql: "SELECT (NULL OR TRUE) AS result FROM persons WHERE id = 1"
@@ -101,6 +114,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL
 
   - id: bool_null_or_false
     sql: "SELECT (NULL OR FALSE) AS result FROM persons WHERE id = 1"
@@ -108,6 +122,7 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: bool_not_null
     sql: "SELECT (NOT NULL) AS result FROM persons WHERE id = 1"
@@ -115,3 +130,4 @@ tests:
     category: "boolean_logic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

@@ -56,6 +56,7 @@ public class FormatTokenCoverageReport
         public final String token;
         public String tdsState;
         public String relState;
+        public String grammarState;
         public final List<String> testIds = new ArrayList<>();
 
         public TokenEntry(String token)
@@ -136,6 +137,10 @@ public class FormatTokenCoverageReport
                     {
                         entry.relState = state;
                     }
+                    else if ("Grammar".equals(path) && entry.grammarState == null)
+                    {
+                        entry.grammarState = state;
+                    }
                 }
             }
         }
@@ -149,6 +154,7 @@ public class FormatTokenCoverageReport
         int total = 0;
         int tdsPass = 0;
         int relPass = 0;
+        int grammarPass = 0;
         for (Map<String, TokenEntry> tokens : byFunction.values())
         {
             for (TokenEntry e : tokens.values())
@@ -162,12 +168,17 @@ public class FormatTokenCoverageReport
                 {
                     relPass++;
                 }
+                if ("PASS".equals(e.grammarState))
+                {
+                    grammarPass++;
+                }
             }
         }
         ObjectNode summary = root.putObject("summary");
         summary.put("total_tokens", total);
         summary.put("tds_pass", tdsPass);
         summary.put("relation_pass", relPass);
+        summary.put("grammar_pass", grammarPass);
 
         ArrayNode functions = root.putArray("functions");
         for (Map.Entry<String, Map<String, TokenEntry>> fEntry : byFunction.entrySet())
@@ -181,6 +192,7 @@ public class FormatTokenCoverageReport
                 tNode.put("token", e.token);
                 tNode.put("tds_status", e.tdsState == null ? "UNTESTED" : e.tdsState);
                 tNode.put("relation_status", e.relState == null ? "UNTESTED" : e.relState);
+                tNode.put("grammar_status", e.grammarState == null ? "UNTESTED" : e.grammarState);
                 ArrayNode ids = tNode.putArray("test_ids");
                 for (String id : e.testIds)
                 {
@@ -206,6 +218,7 @@ public class FormatTokenCoverageReport
             Map<String, TokenEntry> tokens = fEntry.getValue();
             int tdsPass = 0;
             int relPass = 0;
+            int grammarPass = 0;
             for (TokenEntry e : tokens.values())
             {
                 if ("PASS".equals(e.tdsState))
@@ -216,18 +229,24 @@ public class FormatTokenCoverageReport
                 {
                     relPass++;
                 }
+                if ("PASS".equals(e.grammarState))
+                {
+                    grammarPass++;
+                }
             }
 
             md.append("## `").append(function).append("` tokens (")
                     .append(tdsPass).append("/").append(tokens.size()).append(" TDS PASS, ")
-                    .append(relPass).append("/").append(tokens.size()).append(" Relation PASS)\n\n");
-            md.append("| Token | TDS | Relation | Test(s) |\n");
-            md.append("|---|---|---|---|\n");
+                    .append(relPass).append("/").append(tokens.size()).append(" Relation PASS, ")
+                    .append(grammarPass).append("/").append(tokens.size()).append(" Grammar PASS)\n\n");
+            md.append("| Token | TDS | Relation | Grammar | Test(s) |\n");
+            md.append("|---|---|---|---|---|\n");
             for (TokenEntry e : tokens.values())
             {
                 md.append("| `").append(e.token).append("` | ")
                         .append(e.tdsState == null ? "UNTESTED" : e.tdsState).append(" | ")
                         .append(e.relState == null ? "UNTESTED" : e.relState).append(" | ")
+                        .append(e.grammarState == null ? "UNTESTED" : e.grammarState).append(" | ")
                         .append(String.join(", ", e.testIds)).append(" |\n");
             }
             md.append("\n");

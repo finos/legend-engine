@@ -5,17 +5,28 @@ End-to-end tests that compare SQL execution between a real **PostgreSQL 16** dat
 > 📌 **Before investigating a failure, read [Traps that have already cost real time](#traps-that-have-already-cost-real-time)
 > and [Known unsupported areas](#known-unsupported-areas-baselined-error--expected-do-not-chase).**
 > A large number of `ERROR` baselines are expected — the corpus deliberately enumerates the whole
-> Postgres surface, most of which Legend does not implement — and three traps have each cost real
+> Postgres surface, most of which Legend does not implement — and four traps have each cost real
 > debugging time.
 
 ## What this module does
 
 1. Starts a Postgres 16 container (via Testcontainers)
-2. Starts a Legend SQL server (wire-protocol, backed by the same Postgres via a Pure model)
+2. Starts a Legend SQL server (wire-protocol, backed by the same Postgres via a Pure model) and an
+   embedded engine HTTP server that serves the same model from memory
 3. Loads YAML test definitions from `src/main/resources/parity-tests/`
-4. For each test, runs the SQL against both Postgres and Legend (via TDS **and** Relation paths)
+4. For each test, runs the SQL against both Postgres and Legend, via three paths:
+   - **TDS** and **Relation** — the `sql/v1` API, with FROM rewritten to `func('e2e::tds_<table>')` /
+     `func('e2e::rel_<table>')`
+   - **Grammar** — pg-wire to the Legend Postgres server, database
+     `projects|org.finos.legend.engine.e2e:sql-e2e-model:1.0.0` with options
+     `--runtime=e2e::TestRuntime --mapping=e2e::TestMapping`. The server (`GenericLegendExecution`)
+     wraps the SQL in a `#SQL{...}#` island and runs it through `pure/v1/execution/execute` on
+     `E2eEngineHttpServer` (Grizzly, `127.0.0.1:<ephemeral>/api`), whose model `E2eModelLoader`
+     serves from memory. FROM becomes `func('e2e::rel_<table>__Relation_1_')` — see
+     [trap 4](#4-inside-sql-function-names-are-mangled)
 5. Compares results and records status: `PASS`, `FAIL`, `ERROR`, `SKIP`, or `BUG`
-6. Produces coverage reports in `target/` (`function-coverage.md`, `structural-parity.md`)
+6. Produces coverage reports in `target/` (`function-coverage.md`, `structural-parity.md`), with a
+   column per path
 
 ## Prerequisites
 
@@ -59,7 +70,9 @@ below. It is not a CI signal and not a correctness oracle; trap 1 explains why.
 
 The interpreted dev loop diverges from compiled on constructs that are perfectly fine in
 production. Every divergence investigated in depth so far has been an artifact, not a product bug.
-Confirm with `-Dtest.filter` before filing or fixing anything.
+Confirm with `-Dtest.filter` before filing or fixing anything. The interpreted Grammar path is a
+hypothesis for a further reason: it skips the Java `#SQL` layer (see
+[The interpreted Grammar path](#the-interpreted-grammar-path)).
 
 **A wrong-answer (`FAIL`) result is no more trustworthy than an `ERROR`.** The interpreter can
 silently compute a different value — `NULL = NULL` evaluates to `true` interpreted and to `NULL`
@@ -92,6 +105,12 @@ Neither is a Relation-only bug, though it looks that way: `processQuantifiedComp
 so the TDS path bails by design and is baselined `ERROR`. "TDS passes" there means "TDS errors as
 intended".
 
+A 50-case Grammar spot check (stratified by compiled baseline: 26 PASS, 16 ERROR, 8 FAIL) agreed on
+48. Both divergences error identically on the interpreted Relation path, so neither is
+Grammar-specific: `crcs_g1a_win_order_asc_nulls_first_over_join` is the `NULLS FIRST` defect above,
+and `schema_information_columns` reads `information_schema`, which the compiled server answers
+through metadata dispatch that the interpreted loop does not have.
+
 ### 2. A query with no table reference never reaches Legend
 
 `StatementDispatcherVisitor.visitDefault` routes any statement whose `TableNameExtractor` finds no
@@ -119,6 +138,18 @@ nonsense for months — `SELECT json_val #> '{a,b}' AS result FROM json_data WHE
 sql: "SELECT id, int_val # small_val AS result FROM numbers WHERE id = 1"
 ```
 
+### 4. Inside `#SQL`, function names are mangled
+
+The Grammar path rewrites FROM to `func('e2e::rel_persons__Relation_1_')`. The bare
+`func('e2e::rel_persons')` that the TDS and Relation paths use fails inside `#SQL{...}#` with
+`Can't find the packageable element`: a `#SQL` island compiles against the `PureModel`, which indexes
+functions only by signature. The `sql/v1` paths get away with bare names because
+`E2eTestSourceProvider` strips the signature from each function name before resolving.
+
+So the Grammar name is `e2e::rel_<table>__Relation_1_` (`ParityPath.GRAMMAR`), and `join_func` cases
+use `e2e::rel_person_with_dept__Relation_1_`. A startup guard fails the run if any known table has no
+function by that name.
+
 ## Known unsupported areas (baselined `ERROR` — expected, do not chase)
 
 | area | detail |
@@ -143,6 +174,7 @@ src/main/
 ├── java/.../postgres/e2e/
 │   ├── TestCaseLoader.java          # YAML → Java POJO loader
 │   ├── AstFromRewriter.java         # Rewrites table refs to func() calls
+│   ├── ParityPath.java              # TDS / Relation / Grammar: function names, status fields
 │   ├── DirectPostgresRunner.java    # Runs SQL against real Postgres
 │   ├── ResultMatrix.java            # Typed result grid
 │   ├── ResultComparator.java        # Cell-by-cell comparison
@@ -167,6 +199,8 @@ src/test/java/.../postgres/e2e/
 ├── YamlStatusUpdater.java           # Writes expected status back to YAML
 ├── E2eTestSourceProvider.java       # Wires Legend SQL to the Postgres container
 ├── E2eTestPostgresServer.java       # Minimal Legend wire-protocol server
+├── E2eEngineHttpServer.java         # Embedded engine (Grizzly) behind the Grammar path
+├── E2eModelLoader.java              # Serves the e2e model in memory for project sql-e2e-model
 ├── E2eLegendTestClient.java         # HTTP client for Legend SQL API
 └── coverage/                        # Report generators
     ├── FunctionCoverageReport.java
@@ -191,6 +225,7 @@ Each test case has the following fields:
   join_func: true                    # (optional) Use pre-built joined function instead of FROM rewriting
   expected_tds_status: PASS          # Expected status for TDS path
   expected_rel_status: PASS          # Expected status for Relation path
+  expected_grammar_status: PASS      # Expected status for Grammar path
 ```
 
 Valid statuses:
@@ -204,8 +239,9 @@ Valid statuses:
 | `SKIP` | explicitly skipped via `skip:` |
 
 A run fails only when a case *diverges from its baseline*, so a red run means "behaviour changed",
-not "something is broken". Current corpus: **2,307 cases**. TDS baselines: 1005 PASS / 1128 ERROR /
-42 FAIL / 70 BUG / 62 SKIP. Relation baselines: 1161 PASS / 968 ERROR / 46 FAIL / 70 BUG / 62 SKIP.
+not "something is broken". Current corpus: **2,351 cases**. TDS baselines: 932 PASS / 1227 ERROR /
+42 FAIL / 88 BUG / 62 SKIP. Relation baselines: 1139 PASS / 1024 ERROR / 38 FAIL / 88 BUG / 62 SKIP.
+Grammar baselines: 1149 PASS / 1005 ERROR / 47 FAIL / 88 BUG / 62 SKIP.
 
 ## When a fix causes a test to pass
 
@@ -222,7 +258,7 @@ Update the test's expected_tds_status in the YAML file to PASS.
    ```bash
    mvn test -pl legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests -Dparity.updateStatus=true
    ```
-   This automatically updates `expected_tds_status` and `expected_rel_status` in every YAML file to match the current actual results.
+   This automatically updates `expected_tds_status`, `expected_rel_status` and `expected_grammar_status` in every YAML file to match the current actual results.
 
 2. **Review the changes** — `git diff` will show which tests changed status. Verify these are expected:
    - `ERROR → PASS` or `FAIL → PASS` — your fix worked ✅
@@ -236,7 +272,7 @@ If you prefer to update only specific tests:
 
 1. Open the relevant YAML file in `src/main/resources/parity-tests/`
 2. Find the test by its `id`
-3. Change `expected_tds_status: ERROR` to `expected_tds_status: PASS` (and/or `expected_rel_status`)
+3. Change `expected_tds_status: ERROR` to `expected_tds_status: PASS` (and/or `expected_rel_status` / `expected_grammar_status`)
 4. Re-run to confirm the build passes
 
 ## Adding new tests
@@ -255,7 +291,7 @@ If you prefer to update only specific tests:
    ```bash
    mvn test -pl legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests -Dparity.updateStatus=true
    ```
-   This will add `expected_tds_status` and `expected_rel_status` fields automatically.
+   This will add `expected_tds_status`, `expected_rel_status` and `expected_grammar_status` fields automatically.
 
 4. **Commit** the YAML file with the status fields.
 
@@ -265,11 +301,13 @@ If you prefer to update only specific tests:
 
 1. Add the table definition to `parity-tests/schema.yaml` (columns + at least 10 rows of seed data)
 2. Add the corresponding table definition to the Pure model in `e2e-model.pure` (Relational schema, Pure class, mapping)
-3. Add TDS and Relation Pure functions for the new table in `e2e-model.pure`
+3. Add TDS and Relation Pure functions for the new table in `e2e-model.pure`. The Relation function
+   is also the Grammar path's source, by its mangled name `rel_<table>__Relation_1_` (trap 4); a
+   table without one fails the run at startup.
 
 ## Regression enforcement
 
-The `expected_tds_status` / `expected_rel_status` fields in each YAML test case act as the regression baseline:
+The `expected_tds_status` / `expected_rel_status` / `expected_grammar_status` fields in each YAML test case act as the regression baseline:
 
 | Scenario | Build result | Action |
 |----------|-------------|--------|
@@ -284,6 +322,7 @@ The `expected_tds_status` / `expected_rel_status` fields in each YAML test case 
 | Property | Default | Description |
 |----------|---------|-------------|
 | `parity.updateStatus` | `false` | Write current statuses back to YAML files |
+| `parity.paths` | `all` | Comma-separated paths to run — `TDS`, `Relation`, `Grammar` (case-sensitive) — or `all`. A local convenience for iterating on one path; `-Dparity.updateStatus=true` then rewrites only the paths that ran. |
 | `parity.ignoreFixDetection` | `false` | Suppress "FIX DETECTED" failures (regressions still fail) |
 | `parity.failOnError` | `false` | Fail the build if any test has `FAIL` or `ERROR` status |
 | `sql.e2e.corpus.dir` | *(unset — read from the classpath)* | Resource root (the directory containing `parity-tests/`) to read the corpus from instead, picking up edits live. See [Live corpus edits](#live-corpus-edits). |
@@ -303,6 +342,11 @@ The `sql-e2e-devloop` agent skill is the runbook; this section is how it is buil
   schema and mapping) and `framework.pure` (the driver), backed by three natives —
   `resolveCaseRefs`, `executeSQLE2ETest`, `executeAdhocSQL` — with compiled and interpreted
   implementations sharing one `SqlE2ENativeHelper`.
+- **Paths** — the Pure enum `meta::external::query::sql::e2e::SqlE2EPath` is `TDS`, `Relation`,
+  `Grammar`, `Both`, `All`. `resolveCaseRefs`/`caseIndex` emit three refs per case (`id|TDS`,
+  `id|Relation`, `id|Grammar`), and `checkCase`/`diagCase` take one path name. `Both` (TDS +
+  Relation, its meaning before Grammar existed) and `All` (all three) are only for
+  `executeAdhocSQL`/`diagAdhoc`, which run each side independently and report them together.
 - Result comparison reuses this module's own `ResultComparator`/`ResultMatrix` (via
   `TdsJsonResultMatrix`), so the two suites cannot disagree about what a divergence is.
 
@@ -328,6 +372,24 @@ outside.
 **One comparator.** The interpreted loop originally had its own string-canonicalising comparator.
 Two comparators meant two definitions of "divergence", and the bespoke one was the source of most
 false positives. It is gone.
+
+### The interpreted Grammar path
+
+`executeGrammar` (`framework.pure`) emulates the `#SQL{...}#` compile in Pure:
+`parseSqlStatement` → `sqlToPure(query, getSources(), [], scopeVars, preval=false, trace=false,
+compileWithE2eFunctions)` → `executionPlan(lambda, e2e::TestMapping, runtimeFor(conn))` → the same
+LegendJava bind/execute tail as the other paths.
+
+`compileWithE2eFunctions` is `compileViaGrammar` plus the `e2e::` functions the lambda calls, printed
+into the compile unit. The `func` table source emits a call to `e2e::rel_<table>__Relation_1_` rather
+than inlining its body (as the TDS/Relation `SQLSource` does), and the interpreted
+`meta::legend::compile` cannot resolve a call to a model function — it fails with
+`Function does not exist 'e2e::rel_persons()'`.
+
+It skips Java's `ModifiedTranslator`, the `SQLExpression` wrapper and its routing, and the pg-wire /
+HTTP layer — everything the compiled Grammar path goes through between the client and the plan. A
+Grammar result here is a hypothesis twice over; confirm it against compiled `TestPostgresParity`
+(trap 1).
 
 ### Live corpus edits
 
@@ -361,18 +423,21 @@ These affect `legend-engine-xt-sql-e2e-pure` only; the compiled suite is unaffec
 
 After each run, reports are generated in `target/`:
 
-- **`function-coverage.md`** — Per-signature coverage of all 575 Postgres built-in function signatures (PASS/PARTIAL/FAIL/ERROR per TDS and Relation path)
+- **`function-coverage.md`** — Per-signature coverage of all 575 Postgres built-in function signatures (PASS/PARTIAL/FAIL/ERROR per TDS, Relation and Grammar path)
 - **`structural-parity.md`** — Per-feature coverage of SQL constructs (JOINs, CTEs, window frames, etc.)
 - **`failure-details.md`** — Full result set comparisons for every FAIL and ERROR test. Shows the original SQL, rewritten SQL, cell-level diffs, and complete Expected (Postgres) vs Actual (Legend) result tables. Both `function-coverage.md` and `structural-parity.md` link directly to entries in this file — click any error category link (e.g. `FUNCTION_NOT_SUPPORTED`, `RESULT_MISMATCH`) to jump to the full details.
 - **`parity-report.json`** — Machine-readable JSON with all test results
 
-Each markdown report is also rendered to a standalone `.html` file beside it.
+Each markdown report is also rendered to a standalone `.html` file beside it. Every report, and the
+documentation site, carries a Grammar column beside TDS and Relation.
 
 ## Published reports
 
 The four HTML reports are published to the Legend documentation site on every `master` build, at
 <https://legend.finos.org/sql-parity/summary.html>, and are described for users at
 <https://legend.finos.org/docs/reference/legend-sql>.
+
+The published reports show TDS, Relation and Grammar side by side.
 
 The `legend-docs` job in `.github/workflows/build.yml` does the publishing: the `sql` group of `test-modules`
 uploads `target/*.html` as the `sql-parity-report` artifact, and `legend-docs` copies it into

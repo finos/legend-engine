@@ -20,4 +20,6 @@ public class ComputeState
     String environment;
     String warehouse;
     String workspace;
+    String runtime;
+    String mapping;
 }

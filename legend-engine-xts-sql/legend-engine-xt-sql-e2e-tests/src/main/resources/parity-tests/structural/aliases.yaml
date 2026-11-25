@@ -6,6 +6,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_column_no_as
     sql: "SELECT name person_name, salary annual_salary FROM persons ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_expression
     sql: "SELECT name, salary * 1.1 AS adjusted_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
@@ -20,6 +22,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Table aliases
   - id: alias_table
@@ -28,6 +31,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_self_join
     sql: "SELECT p1.name, p2.name AS colleague FROM persons p1 JOIN persons p2 ON p1.dept_id = p2.dept_id AND p1.id < p2.id ORDER BY 1, 2"
@@ -35,6 +39,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Alias usage in clauses
   - id: alias_in_order_by
@@ -43,6 +48,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_in_having
     sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 1 ORDER BY cnt DESC"
@@ -50,6 +56,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Quoted identifiers
   - id: alias_quoted_identifier
@@ -58,6 +65,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_quoted_reserved_word
     sql: "SELECT name AS \"select\", dept_id AS \"from\" FROM persons ORDER BY 1"
@@ -65,6 +73,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Subquery alias
   - id: alias_subquery
@@ -73,6 +82,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_subquery_column_list
     sql: "SELECT s.n, s.s FROM (SELECT name, salary FROM persons) s(n, s) WHERE s.s IS NOT NULL ORDER BY 1"
@@ -80,6 +90,7 @@ tests:
     category: "aliases"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # A computed column aliased over a source column the select list does not project.
   # Covers the "The relation contains duplicates: [X]" family.
@@ -89,6 +100,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_over_source_subquery_star
     sql: "SELECT * FROM (SELECT id, COALESCE(row_number() OVER (ORDER BY id), -1) AS hire_date FROM persons) q ORDER BY id"
@@ -96,6 +108,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_over_source_two_collisions
     sql: "SELECT id, COALESCE(row_number() OVER (ORDER BY id), -1) AS age, COALESCE(rank() OVER (ORDER BY id), -1) AS salary FROM persons ORDER BY id"
@@ -103,6 +116,7 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: alias_over_source_control_no_collision
     sql: "SELECT id, COALESCE(row_number() OVER (ORDER BY id), -1) AS next_hire_date FROM persons ORDER BY id"
@@ -110,3 +124,4 @@ tests:
     category: "aliases"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

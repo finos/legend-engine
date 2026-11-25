@@ -8,6 +8,7 @@ tests:
     signature: "DATE 'YYYY-MM-DD'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ISO with time (space separator)
   - id: date_literal__iso_datetime_space
@@ -16,6 +17,7 @@ tests:
     signature: "TIMESTAMP 'YYYY-MM-DD HH:MI:SS'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ISO with T separator
   - id: date_literal__iso_datetime_t
@@ -24,6 +26,7 @@ tests:
     signature: "TIMESTAMP 'YYYY-MM-DDTHH:MI:SS'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ISO with milliseconds
   - id: date_literal__iso_datetime_milliseconds
@@ -32,6 +35,7 @@ tests:
     signature: "TIMESTAMP 'YYYY-MM-DD HH:MI:SS.MS'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Month Name Variants (Table 8.11) =====
 
@@ -42,6 +46,7 @@ tests:
     signature: "DATE 'Month DD, YYYY'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Abbreviated month name with comma
   - id: date_literal__month_name_abbrev
@@ -50,6 +55,7 @@ tests:
     signature: "DATE 'Mon DD, YYYY'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Day month year (day first)
   - id: date_literal__day_month_year
@@ -58,6 +64,7 @@ tests:
     signature: "DATE 'DD Month YYYY'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Month name with timestamp
   - id: date_literal__month_name_timestamp
@@ -66,6 +73,7 @@ tests:
     signature: "TIMESTAMP 'Month DD, YYYY HH:MI:SS'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== MDY format variants =====
 
@@ -76,6 +84,7 @@ tests:
     signature: "DATE 'M/D/YYYY' (MDY)"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # M/D/Y with timestamp
   - id: date_literal__mdy_timestamp
@@ -84,6 +93,7 @@ tests:
     signature: "TIMESTAMP 'M/D/YYYY HH:MI:SS'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ===== DMY format variants =====
 
@@ -94,6 +104,7 @@ tests:
     signature: "DATE 'D.M.YYYY' (DMY)"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   # ===== Mixed formats with month abbreviation =====
 
@@ -104,6 +115,7 @@ tests:
     signature: "DATE 'YYYY-Mon-DD'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # DD-Mon-YYYY
   - id: date_literal__day_mon_year
@@ -112,6 +124,7 @@ tests:
     signature: "DATE 'DD-Mon-YYYY'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Mon-DD-YYYY
   - id: date_literal__mon_day_year
@@ -120,6 +133,7 @@ tests:
     signature: "DATE 'Mon-DD-YYYY'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Postgres-style =====
 
@@ -130,6 +144,7 @@ tests:
     signature: "DATE 'Dy Mon DD YYYY'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Compact formats =====
 
@@ -140,6 +155,7 @@ tests:
     signature: "DATE 'YYYYMMDD'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # YYMMDD (no separators, 6 digits)
   - id: date_literal__compact_6_digits
@@ -148,6 +164,7 @@ tests:
     signature: "DATE 'YYMMDD'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Julian day =====
 
@@ -158,6 +175,7 @@ tests:
     signature: "DATE 'Jnnnnnnn'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Year + day-of-year =====
 
@@ -168,6 +186,7 @@ tests:
     signature: "DATE 'YYYY.DDD'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== BC/AD =====
 
@@ -178,6 +197,7 @@ tests:
     signature: "DATE 'Month DD, YY BC'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # AD date
   - id: date_literal__ad_date
@@ -186,6 +206,7 @@ tests:
     signature: "DATE 'Month DD, YYYY AD'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Special Date Values =====
 
@@ -196,6 +217,7 @@ tests:
     signature: "TIMESTAMP 'epoch'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # infinity (should error)
   - id: date_literal__infinity
@@ -204,6 +226,7 @@ tests:
     signature: "TIMESTAMP 'infinity'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ===== Timezone Variants =====
 
@@ -214,6 +237,7 @@ tests:
     signature: "TIMESTAMPTZ '+HH'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Timezone abbreviation stripped (PST)
   - id: date_literal__tz_abbrev_stripped
@@ -222,6 +246,7 @@ tests:
     signature: "TIMESTAMPTZ 'PST'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ===== AM/PM =====
 
@@ -232,6 +257,7 @@ tests:
     signature: "TIMESTAMP 'h:MI:SS PM'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Two-digit year =====
 
@@ -242,6 +268,7 @@ tests:
     signature: "DATE 'YY-MM-DD'"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   # ===== Slash with year first =====
 
@@ -252,6 +279,7 @@ tests:
     signature: "DATE 'YYYY/M/D'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Dash with MDY order =====
 
@@ -262,6 +290,7 @@ tests:
     signature: "DATE 'M-D-YYYY'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ===== Edge cases =====
 
@@ -272,6 +301,7 @@ tests:
     signature: "DATE 'leap year'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Year boundary
   - id: date_literal__year_boundary
@@ -280,6 +310,7 @@ tests:
     signature: "DATE 'year boundary'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Early date
   - id: date_literal__early_date
@@ -288,6 +319,7 @@ tests:
     signature: "DATE 'early date'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Far future
   - id: date_literal__far_future
@@ -296,6 +328,7 @@ tests:
     signature: "DATE 'far future'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Start of Unix epoch
   - id: date_literal__unix_epoch
@@ -304,6 +337,7 @@ tests:
     signature: "TIMESTAMP 'unix epoch'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Y2K
   - id: date_literal__y2k
@@ -312,6 +346,7 @@ tests:
     signature: "TIMESTAMP 'Y2K'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Cast Syntax Variants =====
 
@@ -322,6 +357,7 @@ tests:
     signature: "'string'::date"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Cast string to timestamp
   - id: date_literal__cast_string_to_timestamp
@@ -330,6 +366,7 @@ tests:
     signature: "'string'::timestamp"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Cast string to timestamptz
   - id: date_literal__cast_string_to_timestamptz
@@ -338,6 +375,7 @@ tests:
     signature: "'string'::timestamptz"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # CAST function syntax
   - id: date_literal__cast_function_date
@@ -346,6 +384,7 @@ tests:
     signature: "CAST('string' AS date)"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # CAST function to timestamp
   - id: date_literal__cast_function_timestamp
@@ -354,6 +393,7 @@ tests:
     signature: "CAST('string' AS timestamp)"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Timestamp with various precisions =====
 
@@ -364,6 +404,7 @@ tests:
     signature: "TIMESTAMP 'SS.S'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Two fractional digits
   - id: date_literal__fractional_2_digits
@@ -372,6 +413,7 @@ tests:
     signature: "TIMESTAMP 'SS.SS'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Six fractional digits (max postgres precision)
   - id: date_literal__fractional_6_digits
@@ -380,6 +422,7 @@ tests:
     signature: "TIMESTAMP 'SS.SSSSSS'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Nine fractional digits (nanoseconds)
   - id: date_literal__fractional_9_digits
@@ -388,6 +431,7 @@ tests:
     signature: "TIMESTAMP 'SS.SSSSSSSSS'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Time variants =====
 
@@ -398,6 +442,7 @@ tests:
     signature: "TIMESTAMP 'HH:MI'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Midnight
   - id: date_literal__midnight
@@ -406,6 +451,7 @@ tests:
     signature: "TIMESTAMP '00:00:00'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # End of day
   - id: date_literal__end_of_day
@@ -414,6 +460,7 @@ tests:
     signature: "TIMESTAMP '23:59:59'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # 24:00:00 (end of day = start of next day per SQL standard)
   - id: date_literal__24_hours
@@ -422,6 +469,7 @@ tests:
     signature: "TIMESTAMP '24:00:00'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Additional timezone variants =====
 
@@ -432,6 +480,7 @@ tests:
     signature: "TIMESTAMPTZ '-HH:MM'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # UTC timezone (+00:00)
   - id: date_literal__tz_utc
@@ -440,6 +489,7 @@ tests:
     signature: "TIMESTAMPTZ '+00:00'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Timezone with subseconds
   - id: date_literal__tz_with_subseconds
@@ -448,6 +498,7 @@ tests:
     signature: "TIMESTAMPTZ 'SS.MS+TZ'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Timestamp with timezone and T separator
   - id: date_literal__datetime_t_with_tz
@@ -456,6 +507,7 @@ tests:
     signature: "TIMESTAMPTZ 'dateTtime+tz'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ===== Non-padded ISO date =====
 
@@ -466,6 +518,7 @@ tests:
     signature: "DATE 'YYYY-M-D'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ===== Compact date with time =====
 
@@ -476,4 +529,5 @@ tests:
     signature: "TIMESTAMP 'YYYYMMDD HH:MI:SS.S'"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 

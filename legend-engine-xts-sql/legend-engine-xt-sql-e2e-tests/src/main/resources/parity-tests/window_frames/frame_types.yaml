@@ -6,6 +6,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: frame_rows_unbounded_current_avg
     sql: "SELECT name, salary, AVG(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ROWS UNBOUNDED PRECEDING TO UNBOUNDED FOLLOWING (whole partition)
   - id: frame_rows_whole_partition
@@ -21,6 +23,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ROWS N PRECEDING TO N FOLLOWING (sliding window)
   - id: frame_rows_sliding_3
@@ -29,6 +32,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: frame_rows_lookback_2
     sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS sum_3 FROM persons WHERE salary IS NOT NULL ORDER BY 1"
@@ -36,6 +40,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ROWS CURRENT ROW TO UNBOUNDED FOLLOWING
   - id: frame_rows_current_to_end
@@ -44,6 +49,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # RANGE BETWEEN
   - id: frame_range_default
@@ -52,6 +58,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Default frame (no explicit ROWS/RANGE)
   - id: frame_default_implicit
@@ -60,6 +67,7 @@ tests:
     category: "window_frames"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Frame with different aggregates
   - id: frame_multi_agg
@@ -68,6 +76,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ROWS N PRECEDING TO N PRECEDING (lookback only)
   - id: frame_rows_lookback_only
@@ -76,6 +85,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # ROWS N FOLLOWING TO N FOLLOWING (lookahead only)
   - id: frame_rows_lookahead
@@ -84,6 +94,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # RANGE with partition
   - id: frame_range_partition
@@ -92,6 +103,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ROWS CURRENT ROW only
   - id: frame_rows_current_only
@@ -100,6 +112,7 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # Large sliding window
   - id: frame_rows_wide_sliding
@@ -108,3 +121,4 @@ tests:
     category: "window_frames"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

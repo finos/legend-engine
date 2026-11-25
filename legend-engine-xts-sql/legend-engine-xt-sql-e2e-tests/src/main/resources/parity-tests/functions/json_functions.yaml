@@ -11,6 +11,7 @@ tests:
     signature: to_json(anyelement) → json
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: to_jsonb__from_column
     sql: SELECT TO_JSONB(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
@@ -18,6 +19,7 @@ tests:
     signature: to_jsonb(anyelement) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: array_to_json__unsupported_type
     sql: SELECT ARRAY_TO_JSON(ARRAY[1, 2, 3]) AS result FROM persons WHERE id = 1
@@ -25,6 +27,7 @@ tests:
     signature: array_to_json(anyarray) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: array_to_json__bool__unsupported_type
     sql: SELECT ARRAY_TO_JSON(ARRAY[1, 2, 3], true) AS result FROM persons WHERE id = 1
@@ -32,6 +35,7 @@ tests:
     signature: array_to_json(anyarray, boolean) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: row_to_json__unsupported_type
     sql: SELECT ROW_TO_JSON(persons) AS result FROM persons WHERE id = 1
@@ -39,6 +43,7 @@ tests:
     signature: row_to_json(record) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: row_to_json__bool__unsupported_type
     sql: SELECT ROW_TO_JSON(persons, true) AS result FROM persons WHERE id = 1
@@ -46,6 +51,7 @@ tests:
     signature: row_to_json(record, boolean) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_build_array__empty
     sql: SELECT JSON_BUILD_ARRAY() AS result FROM json_data WHERE id = 1
@@ -53,6 +59,7 @@ tests:
     signature: json_build_array() → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: PASS
 
   - id: json_build_array__variadic__from_column
     sql: SELECT JSON_BUILD_ARRAY(id, json_val ->> 'b') AS result FROM json_data WHERE id <= 3 ORDER BY id
@@ -60,6 +67,7 @@ tests:
     signature: json_build_array(VARIADIC "any") → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_build_array__empty
     sql: SELECT JSONB_BUILD_ARRAY() AS result FROM json_data WHERE id = 1
@@ -67,6 +75,7 @@ tests:
     signature: jsonb_build_array() → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_build_array__variadic__from_column
     sql: SELECT JSONB_BUILD_ARRAY(id, jsonb_val ->> 'b') AS result FROM json_data WHERE id <= 3 ORDER BY id
@@ -74,6 +83,7 @@ tests:
     signature: jsonb_build_array(VARIADIC "any") → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_build_object__empty
     sql: SELECT JSON_BUILD_OBJECT() AS result FROM json_data WHERE id = 1
@@ -81,6 +91,7 @@ tests:
     signature: json_build_object() → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_build_object__variadic__from_column
     sql: SELECT JSON_BUILD_OBJECT('id', id, 'val', json_val ->> 'b') AS result FROM json_data WHERE id <= 3 ORDER BY id
@@ -88,6 +99,7 @@ tests:
     signature: json_build_object(VARIADIC "any") → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_build_object__empty
     sql: SELECT JSONB_BUILD_OBJECT() AS result FROM json_data WHERE id = 1
@@ -95,6 +107,7 @@ tests:
     signature: jsonb_build_object() → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_build_object__variadic__from_column
     sql: SELECT JSONB_BUILD_OBJECT('id', id, 'val', jsonb_val ->> 'b') AS result FROM json_data WHERE id <= 3 ORDER BY id
@@ -102,6 +115,7 @@ tests:
     signature: jsonb_build_object(VARIADIC "any") → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object__text_array
     sql: SELECT JSON_OBJECT(ARRAY['a', '1', 'b', '2']) AS result FROM json_data WHERE id = 1
@@ -109,6 +123,7 @@ tests:
     signature: json_object(text[]) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object__keys_values
     sql: SELECT JSON_OBJECT(ARRAY['a','b'], ARRAY['1','2']) AS result FROM json_data WHERE id = 1
@@ -116,6 +131,7 @@ tests:
     signature: json_object(text[], text[]) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object__text_array
     sql: SELECT JSONB_OBJECT(ARRAY['a', '1', 'b', '2']) AS result FROM json_data WHERE id = 1
@@ -123,6 +139,7 @@ tests:
     signature: jsonb_object(text[]) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object__keys_values
     sql: SELECT JSONB_OBJECT(ARRAY['a','b'], ARRAY['1','2']) AS result FROM json_data WHERE id = 1
@@ -130,6 +147,7 @@ tests:
     signature: jsonb_object(text[], text[]) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # =============================================================================
   # JSON Processing Functions
@@ -141,6 +159,7 @@ tests:
     signature: json_array_elements(from_json json, OUT value json) → SETOF json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_array_elements_text__from_column
     sql: SELECT JSON_ARRAY_ELEMENTS_TEXT(json_arr) AS result FROM json_data WHERE id = 3
@@ -148,6 +167,7 @@ tests:
     signature: json_array_elements_text(from_json json, OUT value text) → SETOF text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_array_elements__from_column
     sql: SELECT JSONB_ARRAY_ELEMENTS(jsonb_arr) AS result FROM json_data WHERE id = 1
@@ -155,6 +175,7 @@ tests:
     signature: jsonb_array_elements(from_json jsonb, OUT value jsonb) → SETOF jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_array_elements_text__from_column
     sql: SELECT JSONB_ARRAY_ELEMENTS_TEXT(jsonb_arr) AS result FROM json_data WHERE id = 3
@@ -162,6 +183,7 @@ tests:
     signature: jsonb_array_elements_text(from_json jsonb, OUT value text) → SETOF text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_array_length__from_column
     sql: SELECT JSON_ARRAY_LENGTH(json_arr) AS result FROM json_data WHERE id = 1
@@ -169,6 +191,7 @@ tests:
     signature: json_array_length(json) → integer
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_array_length__from_column
     sql: SELECT JSONB_ARRAY_LENGTH(jsonb_arr) AS result FROM json_data WHERE id = 1
@@ -176,6 +199,7 @@ tests:
     signature: jsonb_array_length(jsonb) → integer
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_each__from_column
     sql: SELECT key, value FROM JSON_EACH((SELECT json_val FROM json_data WHERE id = 1)) ORDER BY key
@@ -183,6 +207,7 @@ tests:
     signature: json_each(from_json json, OUT key text, OUT value json) → SETOF record
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_each_text__from_column
     sql: SELECT key, value FROM JSON_EACH_TEXT((SELECT json_val FROM json_data WHERE id = 1)) ORDER BY key
@@ -190,6 +215,7 @@ tests:
     signature: json_each_text(from_json json, OUT key text, OUT value text) → SETOF record
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_each__from_column
     sql: SELECT key, value FROM JSONB_EACH((SELECT jsonb_val FROM json_data WHERE id = 1)) ORDER BY key
@@ -197,6 +223,7 @@ tests:
     signature: jsonb_each(from_json jsonb, OUT key text, OUT value jsonb) → SETOF record
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_each_text__from_column
     sql: SELECT key, value FROM JSONB_EACH_TEXT((SELECT jsonb_val FROM json_data WHERE id = 1)) ORDER BY key
@@ -204,6 +231,7 @@ tests:
     signature: jsonb_each_text(from_json jsonb, OUT key text, OUT value text) → SETOF record
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_extract_path__from_column
     sql: SELECT JSON_EXTRACT_PATH(json_val, 'a', 'b', 'c') AS result FROM json_data WHERE id = 2
@@ -211,6 +239,7 @@ tests:
     signature: json_extract_path(from_json json, VARIADIC path_elems text[]) → json
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: json_extract_path_text__from_column
     sql: SELECT JSON_EXTRACT_PATH_TEXT(json_val, 'a', 'b', 'c') AS result FROM json_data WHERE id = 2
@@ -218,6 +247,7 @@ tests:
     signature: json_extract_path_text(from_json json, VARIADIC path_elems text[]) → text
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: jsonb_extract_path__from_column
     sql: SELECT JSONB_EXTRACT_PATH(jsonb_val, 'a', 'b', 'c') AS result FROM json_data WHERE id = 2
@@ -225,6 +255,7 @@ tests:
     signature: jsonb_extract_path(from_json jsonb, VARIADIC path_elems text[]) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_extract_path_text__from_column
     sql: SELECT JSONB_EXTRACT_PATH_TEXT(jsonb_val, 'a', 'b', 'c') AS result FROM json_data WHERE id = 2
@@ -232,6 +263,7 @@ tests:
     signature: jsonb_extract_path_text(from_json jsonb, VARIADIC path_elems text[]) → text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object_keys__from_column
     sql: SELECT JSON_OBJECT_KEYS(json_val) AS result FROM json_data WHERE id = 1
@@ -239,6 +271,7 @@ tests:
     signature: json_object_keys(json) → SETOF text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object_keys__from_column
     sql: SELECT JSONB_OBJECT_KEYS(jsonb_val) AS result FROM json_data WHERE id = 1
@@ -246,6 +279,7 @@ tests:
     signature: jsonb_object_keys(jsonb) → SETOF text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_typeof__from_column
     sql: SELECT JSON_TYPEOF(json_val) AS result FROM json_data WHERE id = 1
@@ -253,6 +287,7 @@ tests:
     signature: json_typeof(json) → text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_typeof__array_column
     sql: SELECT JSON_TYPEOF(json_arr) AS result FROM json_data WHERE id = 1
@@ -260,6 +295,7 @@ tests:
     signature: json_typeof(json) → text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_typeof__from_column
     sql: SELECT JSONB_TYPEOF(jsonb_val) AS result FROM json_data WHERE id = 1
@@ -267,6 +303,7 @@ tests:
     signature: jsonb_typeof(jsonb) → text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_strip_nulls__from_column
     sql: SELECT JSON_STRIP_NULLS(json_val) AS result FROM json_data WHERE id = 1
@@ -274,6 +311,7 @@ tests:
     signature: json_strip_nulls(json) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_strip_nulls__from_column
     sql: SELECT JSONB_STRIP_NULLS(jsonb_val) AS result FROM json_data WHERE id = 1
@@ -281,6 +319,7 @@ tests:
     signature: jsonb_strip_nulls(jsonb) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_pretty__from_column
     sql: SELECT JSONB_PRETTY(jsonb_val) AS result FROM json_data WHERE id = 1
@@ -288,6 +327,7 @@ tests:
     signature: jsonb_pretty(jsonb) → text
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # =============================================================================
   # JSONB Modification Functions
@@ -299,6 +339,7 @@ tests:
     signature: jsonb_set(jsonb_in jsonb, path text[], replacement jsonb, create_if_missing boolean DEFAULT true) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_set__create_missing_false
     sql: SELECT JSONB_SET(jsonb_val, '{z}', '"new"', false) AS result FROM json_data WHERE id = 1
@@ -306,6 +347,7 @@ tests:
     signature: jsonb_set(jsonb_in jsonb, path text[], replacement jsonb, create_if_missing boolean DEFAULT true) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_insert__from_column
     sql: SELECT JSONB_INSERT(jsonb_val, '{d}', '"inserted"') AS result FROM json_data WHERE id = 1
@@ -313,6 +355,7 @@ tests:
     signature: jsonb_insert(jsonb_in jsonb, path text[], replacement jsonb, insert_after boolean DEFAULT false) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_insert__after_true
     sql: SELECT JSONB_INSERT(jsonb_arr, '{1}', '99', true) AS result FROM json_data WHERE id = 1
@@ -320,6 +363,7 @@ tests:
     signature: jsonb_insert(jsonb_in jsonb, path text[], replacement jsonb, insert_after boolean DEFAULT false) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # =============================================================================
   # JSON Path Functions
@@ -331,6 +375,7 @@ tests:
     signature: jsonb_path_exists(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → boolean
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_path_match__from_column
     sql: SELECT JSONB_PATH_MATCH(jsonb_val, '$.a == 1') AS result FROM json_data WHERE id = 1
@@ -338,6 +383,7 @@ tests:
     signature: jsonb_path_match(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → boolean
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_path_query__from_column
     sql: SELECT JSONB_PATH_QUERY(jsonb_val, '$.a') AS result FROM json_data WHERE id = 1
@@ -345,6 +391,7 @@ tests:
     signature: jsonb_path_query(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → SETOF jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_path_query_array__from_column
     sql: SELECT JSONB_PATH_QUERY_ARRAY(jsonb_arr, '$[*]') AS result FROM json_data WHERE id = 1
@@ -352,6 +399,7 @@ tests:
     signature: jsonb_path_query_array(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_path_query_first__from_column
     sql: SELECT JSONB_PATH_QUERY_FIRST(jsonb_arr, '$[*]') AS result FROM json_data WHERE id = 1
@@ -359,6 +407,7 @@ tests:
     signature: jsonb_path_query_first(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_path_exists__with_vars
     sql: SELECT JSONB_PATH_EXISTS(jsonb_val, '$.a ? (@ > $x)', '{"x":0}') AS result FROM json_data WHERE id = 1
@@ -366,6 +415,7 @@ tests:
     signature: jsonb_path_exists(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → boolean
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # =============================================================================
   # JSON Aggregate Functions
@@ -377,6 +427,7 @@ tests:
     signature: json_agg(anyelement) → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_agg__from_column
     sql: SELECT JSONB_AGG(jsonb_val ->> 'b') AS result FROM json_data WHERE jsonb_val IS NOT NULL
@@ -384,6 +435,7 @@ tests:
     signature: jsonb_agg(anyelement) → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: json_object_agg__from_column
     sql: SELECT JSON_OBJECT_AGG(id, json_val ->> 'b') AS result FROM json_data WHERE json_val IS NOT NULL
@@ -391,6 +443,7 @@ tests:
     signature: json_object_agg(key "any", value "any") → json
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_object_agg__from_column
     sql: SELECT JSONB_OBJECT_AGG(id, jsonb_val ->> 'b') AS result FROM json_data WHERE jsonb_val IS NOT NULL
@@ -398,6 +451,7 @@ tests:
     signature: jsonb_object_agg(key "any", value "any") → jsonb
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # =============================================================================
   # NULL handling
@@ -409,6 +463,7 @@ tests:
     signature: json_array_length(json) → integer
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: jsonb_array_length__null
     sql: SELECT JSONB_ARRAY_LENGTH(jsonb_arr) AS result FROM json_data WHERE id = 5
@@ -416,3 +471,4 @@ tests:
     signature: jsonb_array_length(jsonb) → integer
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

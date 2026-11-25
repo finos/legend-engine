@@ -20,7 +20,7 @@ edited.
     pure-sql-e2e ids   structural/null_semantics
     pure-sql-e2e run   null_equals_null null_not_equals --mode tds
     pure-sql-e2e case  null_equals_null --mode tds
-    pure-sql-e2e adhoc "SELECT 1 FROM dates WHERE id = 1" --mode both
+    pure-sql-e2e adhoc "SELECT 1 FROM dates WHERE id = 1" --mode all
 """
 import argparse
 import os
@@ -42,7 +42,10 @@ DIAG_ADHOC = E2E + "diagAdhoc_String_1__String_1__String_1_"
 # outlives the edit-test loop this exists to serve.
 MAX_ENTRIES = MAX_TESTS_PER_RUN
 
-MODES = {"tds": ["TDS"], "relation": ["Relation"], "both": ["TDS", "Relation"]}
+# Values are SqlE2EPath names. 'both' is TDS + Relation, not every path.
+PATHS = ["TDS", "Relation", "Grammar"]
+MODES = {"tds": ["TDS"], "relation": ["Relation"], "grammar": ["Grammar"],
+         "both": ["TDS", "Relation"], "all": PATHS}
 
 COMPILED_MODULE = "legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests"
 
@@ -87,7 +90,7 @@ def _case_index(args, filters):
         if line.count("|") != 1:
             continue
         case_id, _, path = line.partition("|")
-        if path in ("TDS", "Relation") and line not in seen:
+        if path in PATHS and line not in seen:
             seen.add(line)
             entries.append((case_id, path))
     return entries
@@ -147,17 +150,18 @@ def cmd_case(args):
 
 
 def cmd_adhoc(args):
-    # 'Both' is a SqlE2EPath value of its own - the native runs each side independently and reports
-    # them together, which is more useful here than two separate executions.
-    mode = "Both" if args.mode == "both" else MODES[args.mode][0]
+    # 'Both' and 'All' are SqlE2EPath values of their own - the native runs each side independently
+    # and reports them together, which is more useful here than separate executions.
+    mode = {"both": "Both", "all": "All"}.get(args.mode) or MODES[args.mode][0]
     print(_execute(args, DIAG_ADHOC, [args.sql, mode], DIAG_TIMEOUT))
     return 0
 
 
 def _add_mode(parser):
-    parser.add_argument("--mode", choices=sorted(MODES), default="both",
-                        help="execution path, applied to every case in the run (default: both). "
-                             "'both' doubles the entry count against the %d-entry cap." % MAX_ENTRIES)
+    parser.add_argument("--mode", choices=sorted(MODES), default="all",
+                        help="execution path, applied to every case in the run (default: all). "
+                             "'both' is TDS + Relation. 'both' and 'all' count as two and three "
+                             "entries per case against the %d-entry cap." % MAX_ENTRIES)
 
 
 def main(argv=None):

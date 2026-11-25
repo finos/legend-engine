@@ -6,6 +6,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LEFT JOIN preserving empty groups
   - id: comp_left_join_empty_groups
@@ -14,6 +15,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # HAVING on joined aggregate
   - id: comp_join_having
@@ -22,6 +24,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # COUNT(DISTINCT) across join
   - id: comp_count_distinct_join
@@ -30,6 +33,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Self-join with aggregation
   - id: comp_self_join_agg
@@ -38,6 +42,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # JOIN + CASE + aggregation
   - id: comp_join_case_agg
@@ -46,6 +51,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LEFT JOIN with COALESCE and multiple aggs
   - id: comp_left_join_coalesce_multi
@@ -54,6 +60,7 @@ tests:
     category: "compositions"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # 3-table join with filter
   - id: comp_three_table_filter
@@ -62,6 +69,7 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # JOIN with derived table
   - id: comp_join_derived
@@ -70,3 +78,4 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

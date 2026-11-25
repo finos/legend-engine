@@ -6,6 +6,7 @@ tests:
     category: "select_star"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: star_with_where
     sql: "SELECT * FROM persons WHERE dept_id = 1 ORDER BY id"
@@ -13,6 +14,7 @@ tests:
     category: "select_star"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # SELECT table.*
   - id: star_qualified
@@ -21,6 +23,7 @@ tests:
     category: "select_star"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: star_qualified_join
     sql: "SELECT p.*, d.name AS dept_name FROM persons p JOIN departments d ON p.dept_id = d.id ORDER BY p.id"
@@ -28,6 +31,7 @@ tests:
     category: "select_star"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: star_multiple_tables
     sql: "SELECT p.*, d.* FROM persons p JOIN departments d ON p.dept_id = d.id WHERE p.id <= 3 ORDER BY p.id"
@@ -35,6 +39,7 @@ tests:
     category: "select_star"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL
 
   # SELECT * from subquery
   - id: star_from_subquery
@@ -43,6 +48,7 @@ tests:
     category: "select_star"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # SELECT * from CTE
   - id: star_from_cte
@@ -51,6 +57,7 @@ tests:
     category: "select_star"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Mixed star and named columns
   - id: star_mixed_with_expression
@@ -59,3 +66,4 @@ tests:
     category: "select_star"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS

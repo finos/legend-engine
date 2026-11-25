@@ -10,6 +10,7 @@ tests:
     category: "fetch_with_ties"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: fetch_first_only
     sql: "SELECT dept_id, salary FROM persons ORDER BY salary DESC FETCH FIRST 3 ROWS ONLY"
@@ -17,6 +18,7 @@ tests:
     category: "fetch_with_ties"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: fetch_next_with_ties
     sql: "SELECT dept_id, salary FROM persons ORDER BY salary DESC OFFSET 1 FETCH NEXT 3 ROWS WITH TIES"
@@ -24,4 +26,5 @@ tests:
     category: "fetch_with_ties"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 

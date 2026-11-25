@@ -15,6 +15,7 @@
 package org.finos.legend.engine.postgres.e2e.coverage.site;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.postgres.e2e.ParityPath;
 import org.finos.legend.engine.postgres.e2e.ParityReport;
 import org.finos.legend.engine.postgres.e2e.ResultMatrix;
 import org.finos.legend.engine.postgres.e2e.TestCaseLoader;
@@ -197,32 +198,21 @@ public class DocumentationSiteGenerator
         StringBuilder rows = new StringBuilder();
         for (FunctionCatalogExtractor.PgFunction fn : fns)
         {
-            boolean untested = "UNTESTED".equals(fn.tdsStatus) && "UNTESTED".equals(fn.relStatus);
+            boolean untested = "UNTESTED".equals(fn.tdsStatus) && "UNTESTED".equals(fn.relStatus) && "UNTESTED".equals(fn.grammarStatus);
             summary.total++;
             if (!untested)
             {
                 summary.tested++;
             }
-            if ("PASS".equals(fn.tdsStatus))
-            {
-                summary.tdsPass++;
-            }
-            if ("PASS".equals(fn.relStatus))
-            {
-                summary.relPass++;
-            }
-            if (isUnsupported(fn.tdsStatus))
-            {
-                summary.tdsUnsupported++;
-            }
-            if (isUnsupported(fn.relStatus))
-            {
-                summary.relUnsupported++;
-            }
+            summary.tally(ParityPath.TDS, fn.tdsStatus);
+            summary.tally(ParityPath.RELATION, fn.relStatus);
+            summary.tally(ParityPath.GRAMMAR, fn.grammarStatus);
             int total = fn.coverage != null ? fn.coverage.total : 0;
             int pass = fn.coverage != null ? fn.coverage.tdsPass : 0;
+            int relPass = fn.coverage != null ? fn.coverage.relPass : 0;
+            int grammarPass = fn.coverage != null ? fn.coverage.grammarPass : 0;
             String href = groupHref(slug + "__" + DocLinks.slugFor(fn.signature), fn.signature, testEntries(fn.coverage));
-            rows.append(entryRow(fn.name, fn.signature, fn.tdsStatus, fn.relStatus, pass, total, untested, href));
+            rows.append(entryRow(fn.name, fn.signature, new String[] {fn.tdsStatus, fn.relStatus, fn.grammarStatus}, new int[] {pass, relPass, grammarPass}, total, untested, href));
         }
         String body = categoryPageBody(category, "Function", rows.toString());
         writePage(outputDir + "/functions/" + slug + ".html", pageShell(category + " ? Functions", body, 1));
@@ -237,33 +227,22 @@ public class DocumentationSiteGenerator
         StringBuilder rows = new StringBuilder();
         for (OperatorCatalogExtractor.PgOperator op : ops)
         {
-            boolean untested = "UNTESTED".equals(op.tdsStatus) && "UNTESTED".equals(op.relStatus);
+            boolean untested = "UNTESTED".equals(op.tdsStatus) && "UNTESTED".equals(op.relStatus) && "UNTESTED".equals(op.grammarStatus);
             summary.total++;
             if (!untested)
             {
                 summary.tested++;
             }
-            if ("PASS".equals(op.tdsStatus))
-            {
-                summary.tdsPass++;
-            }
-            if ("PASS".equals(op.relStatus))
-            {
-                summary.relPass++;
-            }
-            if (isUnsupported(op.tdsStatus))
-            {
-                summary.tdsUnsupported++;
-            }
-            if (isUnsupported(op.relStatus))
-            {
-                summary.relUnsupported++;
-            }
+            summary.tally(ParityPath.TDS, op.tdsStatus);
+            summary.tally(ParityPath.RELATION, op.relStatus);
+            summary.tally(ParityPath.GRAMMAR, op.grammarStatus);
             int total = op.coverage != null ? op.coverage.total : 0;
             int pass = op.coverage != null ? op.coverage.tdsPass : 0;
+            int relPass = op.coverage != null ? op.coverage.relPass : 0;
+            int grammarPass = op.coverage != null ? op.coverage.grammarPass : 0;
             String sig = op.leftType + " " + op.name + " " + op.rightType + " \u2192 " + op.resultType;
             String href = groupHref(slug + "__" + DocLinks.slugFor(sig), sig, testEntries(op.coverage));
-            rows.append(entryRow(op.name, sig, op.tdsStatus, op.relStatus, pass, total, untested, href));
+            rows.append(entryRow(op.name, sig, new String[] {op.tdsStatus, op.relStatus, op.grammarStatus}, new int[] {pass, relPass, grammarPass}, total, untested, href));
         }
         String body = categoryPageBody(category, "Operator", rows.toString());
         writePage(outputDir + "/operators/" + slug + ".html", pageShell(category + " ? Operators", body, 1));
@@ -280,35 +259,23 @@ public class DocumentationSiteGenerator
         {
             String tdsStatus = fc.tdsStatus();
             String relStatus = fc.relStatus();
+            String grammarStatus = fc.grammarStatus();
             boolean untested = fc.total == 0;
             summary.total++;
             if (!untested)
             {
                 summary.tested++;
             }
-            if ("PASS".equals(tdsStatus))
-            {
-                summary.tdsPass++;
-            }
-            if ("PASS".equals(relStatus))
-            {
-                summary.relPass++;
-            }
-            if (isUnsupported(tdsStatus))
-            {
-                summary.tdsUnsupported++;
-            }
-            if (isUnsupported(relStatus))
-            {
-                summary.relUnsupported++;
-            }
+            summary.tally(ParityPath.TDS, tdsStatus);
+            summary.tally(ParityPath.RELATION, relStatus);
+            summary.tally(ParityPath.GRAMMAR, grammarStatus);
             List<TestLinkEntry> entries = new ArrayList<>();
             for (StructuralParityReport.TestEntry te : fc.tests)
             {
-                entries.add(new TestLinkEntry(te.testId, te.tdsState, te.relationState));
+                entries.add(new TestLinkEntry(te.testId, te.tdsState, te.relationState, te.grammarState));
             }
             String href = groupHref(slug + "__" + DocLinks.slugFor(fc.featureName), fc.featureName, entries);
-            rows.append(entryRow(fc.featureName, fc.categoryName, tdsStatus, relStatus, fc.tdsPass, fc.total, untested, href));
+            rows.append(entryRow(fc.featureName, fc.categoryName, new String[] {tdsStatus, relStatus, grammarStatus}, new int[] {fc.tdsPass, fc.relPass, fc.grammarPass}, fc.total, untested, href));
         }
         String body = categoryPageBody(category, "Feature", rows.toString());
         writePage(outputDir + "/" + dir + "/" + slug + ".html", pageShell(category, body, 1));
@@ -335,29 +302,16 @@ public class DocumentationSiteGenerator
                 {
                     summary.tested++;
                 }
-                if ("PASS".equals(te.tdsState))
-                {
-                    summary.tdsPass++;
-                }
-                if ("PASS".equals(te.relState))
-                {
-                    summary.relPass++;
-                }
-                if (isUnsupported(te.tdsState))
-                {
-                    summary.tdsUnsupported++;
-                }
-                if (isUnsupported(te.relState))
-                {
-                    summary.relUnsupported++;
-                }
+                summary.tally(ParityPath.TDS, te.tdsState);
+                summary.tally(ParityPath.RELATION, te.relState);
+                summary.tally(ParityPath.GRAMMAR, te.grammarState);
                 List<TestLinkEntry> entries = new ArrayList<>();
                 for (String id : te.testIds)
                 {
-                    entries.add(new TestLinkEntry(id, te.tdsState, te.relState));
+                    entries.add(new TestLinkEntry(id, te.tdsState, te.relState, te.grammarState));
                 }
                 String href = groupHref("token__" + DocLinks.slugFor(fEntry.getKey()) + "__" + DocLinks.slugFor(te.token), te.token, entries);
-                rows.append(entryRow(te.token, fEntry.getKey(), te.tdsState, te.relState, 0, te.testIds.size(), untested, href));
+                rows.append(entryRow(te.token, fEntry.getKey(), new String[] {te.tdsState, te.relState, te.grammarState}, new int[] {0, 0, 0}, te.testIds.size(), untested, href));
             }
             body.append(tableShell("Token", rows.toString()));
         }
@@ -369,9 +323,6 @@ public class DocumentationSiteGenerator
 
     private void renderTestPage(TestCaseLoader.TestCase tc) throws IOException
     {
-        TestIndex.TestPathInfo tds = testIndex.get(tc.id, "TDS");
-        TestIndex.TestPathInfo rel = testIndex.get(tc.id, "Relation");
-
         StringBuilder body = new StringBuilder();
         body.append("<h1>").append(Html.escape(tc.id)).append("</h1>");
         body.append("<table class=\"kv\">");
@@ -384,13 +335,17 @@ public class DocumentationSiteGenerator
         body.append("</table>");
 
         body.append("<table class=\"status-table\"><tr><th>Path</th><th>Status</th><th>Expected</th></tr>");
-        body.append(statusRow("TDS", tds, tc.expected_tds_status));
-        body.append(statusRow("Relation", rel, tc.expected_rel_status));
+        for (ParityPath path : ParityPath.values())
+        {
+            body.append(statusRow(path.label(), testIndex.get(tc.id, path.label()), path.expectedStatus(tc)));
+        }
         body.append("</table>");
 
         body.append("<h2>Reference SQL</h2><pre class=\"sql\">").append(Html.escape(tc.sql)).append("</pre>");
-        appendPathDetail(body, "TDS", tds);
-        appendPathDetail(body, "Relation", rel);
+        for (ParityPath path : ParityPath.values())
+        {
+            appendPathDetail(body, path.label(), testIndex.get(tc.id, path.label()));
+        }
 
         writePage(outputDir + "/test/" + testFileName(tc.id) + ".html", pageShell(tc.id, body.toString(), 2));
     }
@@ -537,43 +492,50 @@ public class DocumentationSiteGenerator
         body.append("<h1>Legend SQL &#8680; PostgreSQL Parity</h1>");
         body.append("<p class=\"meta\">Generated ").append(Instant.now()).append(" &middot; Legend ").append(Html.escape(legendRevision)).append("</p>");
 
-        int totalTds = 0;
-        int totalRel = 0;
+        int[] totalPass = new int[ParityPath.values().length];
+        int[] totalUnsupported = new int[ParityPath.values().length];
         int totalEntries = 0;
-        int totalTdsUnsupported = 0;
-        int totalRelUnsupported = 0;
         for (AreaSummary area : areas)
         {
             for (CategorySummary c : area.categories)
             {
-                totalTds += c.tdsPass;
-                totalRel += c.relPass;
                 totalEntries += c.total;
-                totalTdsUnsupported += c.tdsUnsupported;
-                totalRelUnsupported += c.relUnsupported;
+                for (ParityPath path : ParityPath.values())
+                {
+                    totalPass[path.ordinal()] += c.pass(path);
+                    totalUnsupported[path.ordinal()] += c.unsupported(path);
+                }
             }
         }
-        int supportedTdsEntries = totalEntries - totalTdsUnsupported;
-        int supportedRelEntries = totalEntries - totalRelUnsupported;
         body.append("<div class=\"scorecard\">");
-        body.append(bar("TDS", totalEntries == 0 ? 0 : (100 * totalTds / totalEntries), totalTds, totalEntries));
-        body.append(bar("Relation", totalEntries == 0 ? 0 : (100 * totalRel / totalEntries), totalRel, totalEntries));
-        body.append(bar("TDS (supported only)", supportedTdsEntries == 0 ? 0 : (100 * totalTds / supportedTdsEntries), totalTds, supportedTdsEntries));
-        body.append(bar("Relation (supported only)", supportedRelEntries == 0 ? 0 : (100 * totalRel / supportedRelEntries), totalRel, supportedRelEntries));
+        for (ParityPath path : ParityPath.values())
+        {
+            int pass = totalPass[path.ordinal()];
+            body.append(bar(path.label(), totalEntries == 0 ? 0 : (100 * pass / totalEntries), pass, totalEntries));
+        }
+        for (ParityPath path : ParityPath.values())
+        {
+            int pass = totalPass[path.ordinal()];
+            int supported = totalEntries - totalUnsupported[path.ordinal()];
+            body.append(bar(path.label() + " (supported only)", supported == 0 ? 0 : (100 * pass / supported), pass, supported));
+        }
         body.append("</div>");
 
-        body.append("<table class=\"index-table\"><tr><th>Area</th><th>Category</th><th>TDS</th><th>Relation</th><th>Tested</th></tr>");
+        body.append("<table class=\"index-table\"><tr><th>Area</th><th>Category</th><th>TDS</th><th>Relation</th><th>Grammar</th><th>Tested</th></tr>");
         for (AreaSummary area : areas)
         {
             for (CategorySummary c : area.categories)
             {
                 String docUrl = DocLinks.urlFor(c.category);
                 String docLink = docUrl == null ? "" : " <a class=\"pg-doc-link\" href=\"" + Html.attr(docUrl) + "\">&#8599;</a>";
-                int tdsPct = c.total == 0 ? 0 : (100 * c.tdsPass / c.total);
-                int relPct = c.total == 0 ? 0 : (100 * c.relPass / c.total);
                 body.append("<tr><td>").append(area.name).append("</td><td><a href=\"").append(c.href).append("\" target=\"_top\">")
-                        .append(Html.escape(c.category)).append("</a>").append(docLink).append("</td><td>").append(tdsPct).append("%</td><td>")
-                        .append(relPct).append("%</td><td>").append(c.tested).append(" / ").append(c.total).append("</td></tr>");
+                        .append(Html.escape(c.category)).append("</a>").append(docLink).append("</td>");
+                for (ParityPath path : ParityPath.values())
+                {
+                    int pct = c.total == 0 ? 0 : (100 * c.pass(path) / c.total);
+                    body.append("<td>").append(pct).append("%</td>");
+                }
+                body.append("<td>").append(c.tested).append(" / ").append(c.total).append("</td></tr>");
             }
         }
         body.append("</table>");
@@ -626,23 +588,29 @@ public class DocumentationSiteGenerator
 
     // ===================== Shared row/page rendering =====================
 
-    private String entryRow(String name, String signature, String tdsStatus, String relStatus, int pass, int total, boolean untested, String href)
+    private String entryRow(String name, String signature, String[] statuses, int[] passes, int total, boolean untested, String href)
     {
-        StatusGlyph.Glyph tdsGlyph = StatusGlyph.forStatus(tdsStatus);
-        StatusGlyph.Glyph relGlyph = StatusGlyph.forStatus(relStatus);
         String nameCell = href != null ? "<a href=\"../" + href + "\">" + Html.escape(name) + "</a>" : Html.escape(name);
-        return "<tr class=\"entry-row\" data-untested=\"" + untested + "\" data-search=\"" + Html.attr((name + " " + signature).toLowerCase()) + "\">"
-                + "<td>" + nameCell + "</td>"
-                + "<td class=\"sig\">" + Html.escape(signature) + "</td>"
-                + "<td class=\"" + tdsGlyph.cssClass + "\" aria-label=\"TDS: " + tdsGlyph.ariaLabel + "\">" + tdsGlyph.symbol + " " + StatusGlyph.label(tdsStatus, pass, total) + "</td>"
-                + "<td class=\"" + relGlyph.cssClass + "\" aria-label=\"Relation: " + relGlyph.ariaLabel + "\">" + relGlyph.symbol + " " + StatusGlyph.label(relStatus, pass, total) + "</td>"
-                + "<td>" + pass + " / " + total + "</td>"
-                + "</tr>";
+        StringBuilder row = new StringBuilder();
+        row.append("<tr class=\"entry-row\" data-untested=\"").append(untested).append("\" data-search=\"")
+                .append(Html.attr((name + " " + signature).toLowerCase())).append("\">")
+                .append("<td>").append(nameCell).append("</td>")
+                .append("<td class=\"sig\">").append(Html.escape(signature)).append("</td>");
+        for (ParityPath path : ParityPath.values())
+        {
+            String status = statuses[path.ordinal()];
+            StatusGlyph.Glyph glyph = StatusGlyph.forStatus(status);
+            row.append("<td class=\"").append(glyph.cssClass).append("\" aria-label=\"").append(path.label()).append(": ")
+                    .append(glyph.ariaLabel).append("\">").append(glyph.symbol).append(" ")
+                    .append(StatusGlyph.label(status, passes[path.ordinal()], total)).append("</td>");
+        }
+        row.append("<td>").append(passes[0]).append(" / ").append(total).append("</td>").append("</tr>");
+        return row.toString();
     }
 
     private String tableShell(String firstColLabel, String rows)
     {
-        return "<table class=\"entries\"><thead><tr><th>" + firstColLabel + "</th><th>Signature</th><th>TDS</th><th>Relation</th><th>Coverage</th></tr></thead><tbody>"
+        return "<table class=\"entries\"><thead><tr><th>" + firstColLabel + "</th><th>Signature</th><th>TDS</th><th>Relation</th><th>Grammar</th><th>Coverage</th></tr></thead><tbody>"
                 + rows + "</tbody></table>";
     }
 
@@ -668,7 +636,7 @@ public class DocumentationSiteGenerator
         {
             for (FunctionCoverageMapper.TestResultEntry e : cov.testDetails)
             {
-                entries.add(new TestLinkEntry(e.testId, e.tdsState, e.relationState));
+                entries.add(new TestLinkEntry(e.testId, e.tdsState, e.relationState, e.grammarState));
             }
         }
         return entries;
@@ -681,7 +649,7 @@ public class DocumentationSiteGenerator
         {
             for (FunctionCoverageMapper.TestResultEntry e : cov.testDetails)
             {
-                entries.add(new TestLinkEntry(e.testId, e.tdsState, e.relationState));
+                entries.add(new TestLinkEntry(e.testId, e.tdsState, e.relationState, e.grammarState));
             }
         }
         return entries;
@@ -720,16 +688,18 @@ public class DocumentationSiteGenerator
         StringBuilder body = new StringBuilder();
         body.append("<h1>").append(Html.escape(title)).append("</h1>");
         body.append("<p class=\"meta\">").append(entries.size()).append(" linked tests</p>");
-        body.append("<table class=\"entries\"><thead><tr><th>Test</th><th>TDS</th><th>Relation</th></tr></thead><tbody>");
+        body.append("<table class=\"entries\"><thead><tr><th>Test</th><th>TDS</th><th>Relation</th><th>Grammar</th></tr></thead><tbody>");
         for (TestLinkEntry e : entries)
         {
-            StatusGlyph.Glyph tdsGlyph = StatusGlyph.forStatus(e.tdsState);
-            StatusGlyph.Glyph relGlyph = StatusGlyph.forStatus(e.relState);
-            body.append("<tr><td><a href=\"../").append(testFileName(e.testId)).append(".html\">").append(Html.escape(e.testId)).append("</a></td>")
-                    .append("<td class=\"").append(tdsGlyph.cssClass).append("\">").append(tdsGlyph.symbol).append(" ")
-                    .append(e.tdsState == null ? "UNTESTED" : e.tdsState).append("</td>")
-                    .append("<td class=\"").append(relGlyph.cssClass).append("\">").append(relGlyph.symbol).append(" ")
-                    .append(e.relState == null ? "UNTESTED" : e.relState).append("</td></tr>");
+            body.append("<tr><td><a href=\"../").append(testFileName(e.testId)).append(".html\">").append(Html.escape(e.testId)).append("</a></td>");
+            for (ParityPath path : ParityPath.values())
+            {
+                String state = e.states[path.ordinal()];
+                StatusGlyph.Glyph glyph = StatusGlyph.forStatus(state);
+                body.append("<td class=\"").append(glyph.cssClass).append("\">").append(glyph.symbol).append(" ")
+                        .append(state == null ? "UNTESTED" : state).append("</td>");
+            }
+            body.append("</tr>");
         }
         body.append("</tbody></table>");
         writePage(outputDir + "/test/group/" + groupSlug + ".html", pageShell(title, body.toString(), 3));
@@ -738,14 +708,12 @@ public class DocumentationSiteGenerator
     private static class TestLinkEntry
     {
         final String testId;
-        final String tdsState;
-        final String relState;
+        final String[] states;
 
-        TestLinkEntry(String testId, String tdsState, String relState)
+        TestLinkEntry(String testId, String tdsState, String relState, String grammarState)
         {
             this.testId = testId;
-            this.tdsState = tdsState;
-            this.relState = relState;
+            this.states = new String[] {tdsState, relState, grammarState};
         }
     }
 
@@ -845,15 +813,35 @@ public class DocumentationSiteGenerator
         final String href;
         int total;
         int tested;
-        int tdsPass;
-        int relPass;
-        int tdsUnsupported;
-        int relUnsupported;
+        private final int[] passByPath = new int[ParityPath.values().length];
+        private final int[] unsupportedByPath = new int[ParityPath.values().length];
 
         CategorySummary(String category, String href)
         {
             this.category = category;
             this.href = href;
+        }
+
+        void tally(ParityPath path, String status)
+        {
+            if ("PASS".equals(status))
+            {
+                passByPath[path.ordinal()]++;
+            }
+            if (isUnsupported(status))
+            {
+                unsupportedByPath[path.ordinal()]++;
+            }
+        }
+
+        int pass(ParityPath path)
+        {
+            return passByPath[path.ordinal()];
+        }
+
+        int unsupported(ParityPath path)
+        {
+            return unsupportedByPath[path.ordinal()];
         }
     }
 

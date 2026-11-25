@@ -21,15 +21,17 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.LinkedHashMap;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Updates YAML test files in-place with the current test status (expected_tds_status / expected_rel_status).
+ * Updates YAML test files in-place with the current test status (expected_tds_status / expected_rel_status / expected_grammar_status).
  * Activated by running with -Dparity.updateStatus=true.
  *
  * This performs line-level manipulation to preserve formatting and comments.
@@ -38,19 +40,19 @@ public class YamlStatusUpdater
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(YamlStatusUpdater.class);
 
-    private final Map<String, String> tdsResults = new ConcurrentHashMap<>();
-    private final Map<String, String> relResults = new ConcurrentHashMap<>();
+    private final Map<ParityPath, Map<String, String>> results = new EnumMap<>(ParityPath.class);
+
+    public YamlStatusUpdater()
+    {
+        for (ParityPath path : ParityPath.values())
+        {
+            this.results.put(path, new ConcurrentHashMap<>());
+        }
+    }
 
     public void recordResult(String testId, String path, String status)
     {
-        if ("TDS".equals(path))
-        {
-            tdsResults.put(testId, status);
-        }
-        else
-        {
-            relResults.put(testId, status);
-        }
+        this.results.get(ParityPath.fromLabel(path)).put(testId, status);
     }
 
     /**
@@ -83,11 +85,13 @@ public class YamlStatusUpdater
     {
         List<String> lines = Files.readAllLines(yamlFile.toPath());
         StringBuilder result = new StringBuilder();
-        String currentId = null;
 
         Pattern idPattern = Pattern.compile("^(\\s*)-\\s*id:\\s*(.+)$");
-        Pattern tdsStatusPattern = Pattern.compile("^(\\s*)expected_tds_status:\\s*(.+)$");
-        Pattern relStatusPattern = Pattern.compile("^(\\s*)expected_rel_status:\\s*(.+)$");
+        Map<ParityPath, Pattern> statusPatterns = new EnumMap<>(ParityPath.class);
+        for (ParityPath path : ParityPath.values())
+        {
+            statusPatterns.put(path, Pattern.compile("^(\\s*)" + path.statusField() + ":\\s*(.+)$"));
+        }
 
         boolean modified = false;
         int i = 0;
@@ -97,71 +101,61 @@ public class YamlStatusUpdater
             Matcher idMatcher = idPattern.matcher(line);
             if (idMatcher.matches())
             {
-                currentId = idMatcher.group(2).trim().replaceAll("^[\"']|[\"']$", "");
+                String currentId = idMatcher.group(2).trim().replaceAll("^[\"']|[\"']$", "");
                 result.append(line).append('\n');
                 i++;
 
-                // Look ahead for the rest of this test case's fields
-                // We need to insert/update expected_tds_status and expected_rel_status
                 String indent = idMatcher.group(1) + "  ";
-                boolean hasTdsStatus = false;
-                boolean hasRelStatus = false;
+                Set<ParityPath> presentStatuses = EnumSet.noneOf(ParityPath.class);
 
-                // Scan ahead to find end of this test block and check for existing status fields
                 int blockEnd = i;
                 while (blockEnd < lines.size())
                 {
                     String nextLine = lines.get(blockEnd);
-                    // New test case or end of list
                     if (nextLine.matches("\\s*-\\s*id:.*") || (nextLine.trim().isEmpty() && blockEnd + 1 < lines.size() && lines.get(blockEnd + 1).matches("\\s*-\\s*id:.*")))
                     {
                         break;
                     }
-                    if (tdsStatusPattern.matcher(nextLine).matches())
+                    for (ParityPath path : ParityPath.values())
                     {
-                        hasTdsStatus = true;
-                    }
-                    if (relStatusPattern.matcher(nextLine).matches())
-                    {
-                        hasRelStatus = true;
+                        if (statusPatterns.get(path).matcher(nextLine).matches())
+                        {
+                            presentStatuses.add(path);
+                        }
                     }
                     blockEnd++;
                 }
 
-                // Process the block lines
+                // trailing comments before the next '- id:' describe the next test, so missing fields go above them
+                int insertAt = blockEnd;
+                while (insertAt > i && (lines.get(insertAt - 1).trim().isEmpty() || lines.get(insertAt - 1).trim().startsWith("#")))
+                {
+                    insertAt--;
+                }
+
                 while (i < blockEnd)
                 {
+                    if (i == insertAt)
+                    {
+                        modified |= appendMissingStatuses(result, indent, currentId, presentStatuses);
+                    }
                     String blockLine = lines.get(i);
-                    Matcher tdsMatcher = tdsStatusPattern.matcher(blockLine);
-                    Matcher relMatcher = relStatusPattern.matcher(blockLine);
-
-                    if (tdsMatcher.matches() && currentId != null && tdsResults.containsKey(currentId))
+                    String replacement = null;
+                    for (ParityPath path : ParityPath.values())
                     {
-                        result.append(tdsMatcher.group(1)).append("expected_tds_status: ").append(tdsResults.get(currentId)).append('\n');
-                        modified = true;
+                        Matcher matcher = statusPatterns.get(path).matcher(blockLine);
+                        if (matcher.matches() && this.results.get(path).containsKey(currentId))
+                        {
+                            replacement = matcher.group(1) + path.statusField() + ": " + this.results.get(path).get(currentId);
+                            modified = true;
+                        }
                     }
-                    else if (relMatcher.matches() && currentId != null && relResults.containsKey(currentId))
-                    {
-                        result.append(relMatcher.group(1)).append("expected_rel_status: ").append(relResults.get(currentId)).append('\n');
-                        modified = true;
-                    }
-                    else
-                    {
-                        result.append(blockLine).append('\n');
-                    }
+                    result.append(replacement != null ? replacement : blockLine).append('\n');
                     i++;
                 }
-
-                // Append missing status fields at the end of the block
-                if (currentId != null && !hasTdsStatus && tdsResults.containsKey(currentId))
+                if (insertAt == blockEnd)
                 {
-                    result.append(indent).append("expected_tds_status: ").append(tdsResults.get(currentId)).append('\n');
-                    modified = true;
-                }
-                if (currentId != null && !hasRelStatus && relResults.containsKey(currentId))
-                {
-                    result.append(indent).append("expected_rel_status: ").append(relResults.get(currentId)).append('\n');
-                    modified = true;
+                    modified |= appendMissingStatuses(result, indent, currentId, presentStatuses);
                 }
             }
             else
@@ -176,6 +170,20 @@ public class YamlStatusUpdater
             Files.write(yamlFile.toPath(), result.toString().getBytes(StandardCharsets.UTF_8));
             LOGGER.info("Updated status in: {}", yamlFile.getName());
         }
+    }
+
+    private boolean appendMissingStatuses(StringBuilder result, String indent, String testId, Set<ParityPath> presentStatuses)
+    {
+        boolean appended = false;
+        for (ParityPath path : ParityPath.values())
+        {
+            if (!presentStatuses.contains(path) && this.results.get(path).containsKey(testId))
+            {
+                result.append(indent).append(path.statusField()).append(": ").append(this.results.get(path).get(testId)).append('\n');
+                appended = true;
+            }
+        }
+        return appended;
     }
 }
 

@@ -22,8 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Cross-references test results with the Postgres operator catalog using
@@ -48,55 +50,51 @@ public class OperatorCoverageMapper
         public int relFail;
         public int relError;
         public int relSkip;
+        public int grammarPass;
+        public int grammarFail;
+        public int grammarError;
+        public int grammarSkip;
         public int total;
+        public boolean tdsRecorded = true;
+        public boolean relRecorded = true;
+        public boolean grammarRecorded = true;
         public final List<FunctionCoverageMapper.TestResultEntry> testDetails = new ArrayList<>();
 
         public String tdsStatus()
         {
-            if (total == 0)
-            {
-                return "UNTESTED";
-            }
-            int effective = total - tdsSkip;
-            if (effective == 0)
-            {
-                return "NOT_APPLICABLE";
-            }
-            if (tdsPass == effective)
-            {
-                return "PASS";
-            }
-            if (tdsPass > 0)
-            {
-                return "PARTIAL";
-            }
-            if (tdsFail > 0)
-            {
-                return "FAIL";
-            }
-            return "UNSUPPORTED";
+            return status(tdsPass, tdsFail, tdsSkip, tdsRecorded);
         }
 
         public String relStatus()
         {
-            if (total == 0)
+            return status(relPass, relFail, relSkip, relRecorded);
+        }
+
+        public String grammarStatus()
+        {
+            return status(grammarPass, grammarFail, grammarSkip, grammarRecorded);
+        }
+
+        private String status(int pass, int fail, int skip, boolean recorded)
+        {
+            if (total == 0 || !recorded)
             {
                 return "UNTESTED";
             }
-            int effective = total - relSkip;
+            int effective = total - skip;
             if (effective == 0)
             {
                 return "NOT_APPLICABLE";
             }
-            if (relPass == effective)
+            if (pass == effective)
             {
                 return "PASS";
             }
-            if (relPass > 0)
+            if (pass > 0)
             {
                 return "PARTIAL";
             }
-            if (relFail > 0)
+            if (fail > 0)
             {
                 return "FAIL";
             }
@@ -127,12 +125,15 @@ public class OperatorCoverageMapper
                 {
                     entry.tdsState = "SKIP";
                     entry.relationState = "SKIP";
+                    entry.grammarState = "SKIP";
                     cov.tdsSkip++;
                     cov.relSkip++;
+                    cov.grammarSkip++;
                 }
             }
         }
 
+        Set<String> recordedPaths = new HashSet<>();
         if (reportFile != null && reportFile.exists())
         {
             JsonNode report = MAPPER.readTree(reportFile);
@@ -144,6 +145,7 @@ public class OperatorCoverageMapper
                     String id = result.has("id") ? result.get("id").asText() : "";
                     String state = result.has("state") ? result.get("state").asText() : "";
                     String path = result.has("path") ? result.get("path").asText() : "";
+                    recordedPaths.add(path);
 
                     FunctionCoverageMapper.TestResultEntry entry = linkedTests.get(id);
                     if (entry != null)
@@ -155,6 +157,10 @@ public class OperatorCoverageMapper
                         else if ("Relation".equals(path) && entry.relationState == null)
                         {
                             entry.relationState = state;
+                        }
+                        else if ("Grammar".equals(path) && entry.grammarState == null)
+                        {
+                            entry.grammarState = state;
                         }
                     }
                 }
@@ -169,8 +175,12 @@ public class OperatorCoverageMapper
             cov.relPass = 0;
             cov.relFail = 0;
             cov.relError = 0;
+            cov.grammarPass = 0;
+            cov.grammarFail = 0;
+            cov.grammarError = 0;
             int skipTds = 0;
             int skipRel = 0;
+            int skipGrammar = 0;
 
             for (FunctionCoverageMapper.TestResultEntry entry : cov.testDetails)
             {
@@ -207,9 +217,30 @@ public class OperatorCoverageMapper
                 {
                     skipRel++;
                 }
+
+                if ("PASS".equals(entry.grammarState))
+                {
+                    cov.grammarPass++;
+                }
+                else if ("FAIL".equals(entry.grammarState))
+                {
+                    cov.grammarFail++;
+                }
+                else if ("ERROR".equals(entry.grammarState) || "BUG".equals(entry.grammarState))
+                {
+                    cov.grammarError++;
+                }
+                else
+                {
+                    skipGrammar++;
+                }
             }
             cov.tdsSkip = skipTds;
             cov.relSkip = skipRel;
+            cov.grammarSkip = skipGrammar;
+            cov.tdsRecorded = recordedPaths.contains("TDS");
+            cov.relRecorded = recordedPaths.contains("Relation");
+            cov.grammarRecorded = recordedPaths.contains("Grammar");
         }
 
         // Inject synthetic catalog entries for tested operator signatures that don't
@@ -245,6 +276,7 @@ public class OperatorCoverageMapper
                 SignatureCoverage cov = entry.getValue();
                 syntheticOp.tdsStatus = cov.tdsStatus();
                 syntheticOp.relStatus = cov.relStatus();
+                syntheticOp.grammarStatus = cov.grammarStatus();
                 syntheticOp.coverage = cov;
                 catalog.computeIfAbsent(category, k -> new ArrayList<>()).add(syntheticOp);
             }
@@ -280,13 +312,21 @@ public class OperatorCoverageMapper
                     merged.relFail += c.relFail;
                     merged.relError += c.relError;
                     merged.relSkip += c.relSkip;
+                    merged.grammarPass += c.grammarPass;
+                    merged.grammarFail += c.grammarFail;
+                    merged.grammarError += c.grammarError;
+                    merged.grammarSkip += c.grammarSkip;
                     merged.total += c.total;
+                    merged.tdsRecorded = c.tdsRecorded;
+                    merged.relRecorded = c.relRecorded;
+                    merged.grammarRecorded = c.grammarRecorded;
                     merged.testDetails.addAll(c.testDetails);
                 }
                 if (merged != null)
                 {
                     op.tdsStatus = merged.tdsStatus();
                     op.relStatus = merged.relStatus();
+                    op.grammarStatus = merged.grammarStatus();
                     op.coverage = merged;
                 }
             }

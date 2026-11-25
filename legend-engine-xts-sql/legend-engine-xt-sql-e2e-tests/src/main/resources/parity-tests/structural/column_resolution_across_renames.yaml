@@ -55,6 +55,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e3_order_by_arithmetic
     sql: "SELECT name, id FROM persons ORDER BY id * 2 DESC, name"
@@ -62,6 +63,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e3_order_by_case
     sql: "SELECT name, dept_id FROM persons WHERE dept_id IS NOT NULL ORDER BY CASE WHEN dept_id = 1 THEN 0 ELSE 1 END, name"
@@ -69,6 +71,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # The shape the corpus actually produces. Engine rejects NULLS FIRST/LAST outright,
   # so the upstream converter rewrites null ordering into a CASE key to preserve the
@@ -79,6 +82,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e3_order_by_two_expressions
     sql: "SELECT name, id FROM persons ORDER BY LENGTH(name) DESC, id * 2, name"
@@ -86,6 +90,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e3_order_by_coalesce_over_nulls
     sql: "SELECT name, age FROM persons ORDER BY COALESCE(age, 0), name"
@@ -93,6 +98,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e3_order_by_expression_mixed_with_plain_column
     sql: "SELECT name, dept_id, salary FROM persons WHERE salary IS NOT NULL ORDER BY dept_id, UPPER(name)"
@@ -100,6 +106,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e3_order_by_expression_over_join
     sql: "SELECT p.name AS name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY UPPER(d.name), name"
@@ -107,6 +114,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # --- design guards -----------------------------------------------------
   #
@@ -124,6 +132,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: ERROR
 
   # The matching-unaliased-projection guard ('SELECT upper(x) FROM t ORDER BY upper(x)')
   # lives in testTranspile.pure, not here: an unaliased expression projection has an
@@ -140,6 +149,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e3_order_by_plain_column_unchanged
     sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary DESC, name"
@@ -147,6 +157,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # DISTINCT is deliberately excluded from the materialisation: an extra column would take
   # part in the distinct and silently change which rows survive. A plain column key is
@@ -157,6 +168,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ==========================================================================
   # GROUP BY keys resolved against the pre-rename relation
@@ -171,6 +183,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e1_group_by_key_from_right_side
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
@@ -178,6 +191,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e1_group_by_two_keys_both_sides
     sql: "SELECT p.dept_id AS dept_id, d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id, d.name ORDER BY 1, 2"
@@ -185,6 +199,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # The aggregate path, not the key list: createAggregation builds `x | $x.<col>` lambdas
   # that read the renamed relation, so those names have to follow the rename too. Here the
@@ -195,6 +210,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e1_group_by_multiple_aggregates
     sql: "SELECT d.name AS name, COUNT(*) AS c, MIN(p.age) AS min_age, MAX(p.age) AS max_age FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.age IS NOT NULL GROUP BY d.name ORDER BY 1"
@@ -202,6 +218,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e1_group_by_having_over_join
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name HAVING COUNT(*) > 1 ORDER BY 1"
@@ -209,6 +226,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e1_group_by_ordinal_over_join
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY 1 ORDER BY 1"
@@ -216,6 +234,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # No aggregate at all -- processGroupBy takes its restrict+distinct branch, which resolves
   # the key list through the same context.
@@ -225,6 +244,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Both sides are the same table, so every column name collides and both sides get
   # suffixed.
@@ -234,6 +254,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e1_group_by_over_join_ordered_by_aggregate_alias
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY c DESC, name"
@@ -241,6 +262,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ==========================================================================
   # Window PARTITION BY / ORDER BY keys -- the same desync, one function over
@@ -252,6 +274,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e2_window_order_key_over_join
     sql: "SELECT p.name AS name, p.salary AS salary, RANK() OVER (ORDER BY p.salary DESC) AS r FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL ORDER BY 3, 1"
@@ -259,6 +282,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e2_window_partition_and_order_from_both_sides
     sql: "SELECT p.name AS name, d.name AS dept_name, ROW_NUMBER() OVER (PARTITION BY d.name ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 3"
@@ -266,6 +290,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e2_two_window_functions_over_join
     sql: "SELECT p.name AS name, p.dept_id AS dept_id, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.name) AS rn, RANK() OVER (PARTITION BY p.dept_id ORDER BY p.id DESC) AS r FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 1"
@@ -273,6 +298,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e2_window_aggregate_over_join
     sql: "SELECT p.name AS name, p.dept_id AS dept_id, SUM(p.salary) OVER (PARTITION BY p.dept_id) AS dept_total FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL ORDER BY 2, 1"
@@ -280,6 +306,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: colres_e2_window_self_join
     sql: "SELECT a.name AS name, a.dept_id AS dept_id, ROW_NUMBER() OVER (PARTITION BY a.dept_id ORDER BY a.name) AS rn FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id ORDER BY 2, 1, 3"
@@ -287,6 +314,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e2_window_argument_renamed_column
     sql: "SELECT p.name AS name, LAG(p.name) OVER (ORDER BY p.id) AS prev_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1, 2"
@@ -294,6 +322,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: colres_e2_window_argument_renamed_column_self_join
     sql: "SELECT b.salary AS salary, LAG(b.salary) OVER (ORDER BY a.id) AS prev_salary FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id ORDER BY 1, 2"
@@ -301,6 +330,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: FAIL
 
   # ==========================================================================
   # WRONG-RESULTS GUARDS
@@ -320,6 +350,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: colres_e1_group_by_two_sides_renamed_differently
     sql: "SELECT d.name AS dept_name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
@@ -327,6 +358,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ==========================================================================
   # KNOWN GAPS -- expected to stay ERROR
@@ -348,6 +380,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Nor for a window query, for the same reason.
   - id: colres_gap_order_by_expression_in_window_query
@@ -356,6 +389,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # The helper extend lands after the projection, so the expression may only reference
   # columns the projection kept. Here `age` is not projected, so the key cannot be built.
@@ -366,3 +400,4 @@ tests:
     category: "column_resolution"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

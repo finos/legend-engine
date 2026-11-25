@@ -6,6 +6,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: partition_single_rank
     sql: "SELECT name, dept_id, salary, RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS dept_rank FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # PARTITION BY multiple columns
   - id: partition_multi
@@ -21,6 +23,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # No PARTITION BY (whole result)
   - id: partition_none
@@ -29,6 +32,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY DESC in window
   - id: window_order_desc
@@ -37,6 +41,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # ORDER BY multiple columns in window
   - id: window_order_multi
@@ -45,6 +50,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Multiple window functions in same SELECT
   - id: multi_window_funcs
@@ -53,6 +59,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Different OVER clauses in same query
   - id: different_over_clauses
@@ -61,6 +68,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Window function with PARTITION BY + ORDER BY + frame
   - id: partition_order_frame
@@ -69,6 +77,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # NTILE window function
   - id: window_ntile
@@ -77,6 +86,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LAG window function
   - id: window_lag
@@ -85,6 +95,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LEAD window function
   - id: window_lead
@@ -93,6 +104,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # LAG with offset and default
   - id: window_lag_offset
@@ -101,6 +113,7 @@ tests:
     category: "window_partitioning"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # FIRST_VALUE / LAST_VALUE
   - id: window_first_last_value
@@ -109,3 +122,4 @@ tests:
     category: "window_partitioning"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS

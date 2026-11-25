@@ -140,5 +140,6 @@ public class TestCaseLoader
         public String category;  // structural parity grouping (joins, window_frames, etc.)
         public String expected_tds_status;  // expected status for TDS path: PASS, FAIL, ERROR, SKIP, BUG
         public String expected_rel_status;  // expected status for Relation path: PASS, FAIL, ERROR, SKIP, BUG
+        public String expected_grammar_status;  // expected status for Grammar path: PASS, FAIL, ERROR, SKIP, BUG
     }
 }

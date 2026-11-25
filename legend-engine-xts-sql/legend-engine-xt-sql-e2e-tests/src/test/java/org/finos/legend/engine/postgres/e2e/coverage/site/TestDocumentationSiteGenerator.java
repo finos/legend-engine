@@ -65,6 +65,7 @@ public class TestDocumentationSiteGenerator
         lowerTest.signature = "lower(text) \u2192 text";
         lowerTest.expected_tds_status = "PASS";
         lowerTest.expected_rel_status = "PASS";
+        lowerTest.expected_grammar_status = "PASS";
 
         TestCaseLoader.TestCase plusTest = new TestCaseLoader.TestCase();
         plusTest.id = "plus__int__basic";
@@ -89,6 +90,7 @@ public class TestDocumentationSiteGenerator
         errTest.signature = "coalesce(int, int) \u2192 int";
         errTest.expected_tds_status = "ERROR";
         errTest.expected_rel_status = "ERROR";
+        errTest.expected_grammar_status = "ERROR";
 
         List<TestCaseLoader.TestCase> allTestCases = Arrays.asList(lowerTest, plusTest, joinTest, errTest);
 
@@ -100,12 +102,14 @@ public class TestDocumentationSiteGenerator
                     + "  \"results\": [\n"
                     + "    {\"id\": \"lower__basic\", \"path\": \"TDS\", \"state\": \"PASS\", \"sql\": \"SELECT lower('ABC')\", \"rewrittenSql\": \"SELECT lower('ABC')\"},\n"
                     + "    {\"id\": \"lower__basic\", \"path\": \"Relation\", \"state\": \"PASS\", \"sql\": \"SELECT lower('ABC')\"},\n"
+                    + "    {\"id\": \"lower__basic\", \"path\": \"Grammar\", \"state\": \"PASS\", \"sql\": \"SELECT lower('ABC')\"},\n"
                     + "    {\"id\": \"plus__int__basic\", \"path\": \"TDS\", \"state\": \"PASS\", \"sql\": \"SELECT 1 + 1\"},\n"
                     + "    {\"id\": \"plus__int__basic\", \"path\": \"Relation\", \"state\": \"FAIL\", \"sql\": \"SELECT 1 + 1\"},\n"
                     + "    {\"id\": \"struct_inner_join\", \"path\": \"TDS\", \"state\": \"PASS\", \"sql\": \"SELECT * FROM a JOIN b ON a.id = b.id\"},\n"
                     + "    {\"id\": \"struct_inner_join\", \"path\": \"Relation\", \"state\": \"PASS\", \"sql\": \"SELECT * FROM a JOIN b ON a.id = b.id\"},\n"
                     + "    {\"id\": \"coalesce__int__first_non_null\", \"path\": \"TDS\", \"state\": \"ERROR\", \"sql\": \"SELECT coalesce(NULL, 1)\"},\n"
-                    + "    {\"id\": \"coalesce__int__first_non_null\", \"path\": \"Relation\", \"state\": \"ERROR\", \"sql\": \"SELECT coalesce(NULL, 1)\"}\n"
+                    + "    {\"id\": \"coalesce__int__first_non_null\", \"path\": \"Relation\", \"state\": \"ERROR\", \"sql\": \"SELECT coalesce(NULL, 1)\"},\n"
+                    + "    {\"id\": \"coalesce__int__first_non_null\", \"path\": \"Grammar\", \"state\": \"ERROR\", \"sql\": \"SELECT coalesce(NULL, 1)\"}\n"
                     + "  ],\n"
                     + "  \"failures\": [\n"
                     + "    {\"id\": \"plus__int__basic\", \"path\": \"Relation\", \"state\": \"FAIL\", \"sql\": \"SELECT 1 + 1\", "
@@ -113,7 +117,9 @@ public class TestDocumentationSiteGenerator
                     + "    {\"id\": \"coalesce__int__first_non_null\", \"path\": \"TDS\", \"state\": \"ERROR\", \"sql\": \"SELECT coalesce(NULL, 1)\", "
                     + "\"rewrittenSql\": \"SELECT coalesce(NULL, 1) FROM tds_dual\", \"error\": \"No function matches the given name 'coalesce'\"},\n"
                     + "    {\"id\": \"coalesce__int__first_non_null\", \"path\": \"Relation\", \"state\": \"ERROR\", \"sql\": \"SELECT coalesce(NULL, 1)\", "
-                    + "\"rewrittenSql\": \"SELECT coalesce(NULL, 1) FROM rel_dual\", \"error\": \"No function matches the given name 'coalesce'\"}\n"
+                    + "\"rewrittenSql\": \"SELECT coalesce(NULL, 1) FROM rel_dual\", \"error\": \"No function matches the given name 'coalesce'\"},\n"
+                    + "    {\"id\": \"coalesce__int__first_non_null\", \"path\": \"Grammar\", \"state\": \"ERROR\", \"sql\": \"SELECT coalesce(NULL, 1)\", "
+                    + "\"rewrittenSql\": \"SELECT coalesce(NULL, 1) FROM grammar_dual\", \"error\": \"Error calling the engine (url=pure/v1/execution/execute, status=500): Can't find a match for function 'coalesce'\"}\n"
                     + "  ]\n"
                     + "}\n");
         }
@@ -168,9 +174,18 @@ public class TestDocumentationSiteGenerator
         assertTrue(joins.contains("test/struct_inner_join.html"));
         assertTrue(joins.contains("postgresql.org/docs"), "structural category page should link back to the PG docs");
 
+        // --- Grammar column on every table, with an absent Grammar result rendered as untested ---
+        assertTrue(stringFns.contains("<th>Grammar</th>"), "function category page should have a Grammar column");
+        assertTrue(stringFns.contains("aria-label=\"Grammar: Pass\""), "tested function should show a passing Grammar cell");
+        assertTrue(joins.contains("aria-label=\"Grammar: Untested\""), "structural row without a Grammar result should render as untested");
+        assertTrue(overview.contains("<th>Grammar</th>"), "overview category table should have a Grammar column");
+        assertTrue(overview.contains("Grammar (supported only)"), "overview scorecard should have Grammar bars");
+
         // --- Per-test permalink pages ---
         String lowerPage = read(new File(outputDir, "test/lower__basic.html"));
         assertTrue(lowerPage.contains("lower__basic"));
+        assertTrue(lowerPage.contains("<tr><td>Grammar</td>"), "status table should have a Grammar row");
+        assertTrue(lowerPage.contains("id=\"grammar\""), "page should have a Grammar path section");
         assertTrue(lowerPage.contains("SELECT lower(&#39;ABC&#39;)") || lowerPage.contains("SELECT lower('ABC')"));
 
         String plusPage = read(new File(outputDir, "test/plus__int__basic.html"));
@@ -181,7 +196,9 @@ public class TestDocumentationSiteGenerator
         // --- ERROR-state test page: SQL, rewritten Legend SQL, and the error message ---
         String errPage = read(new File(outputDir, "test/coalesce__int__first_non_null.html"));
         assertTrue(errPage.contains("SELECT coalesce(NULL, 1)"), "ERROR page should show the input SQL");
-        assertTrue(errPage.contains("tds_dual") && errPage.contains("rel_dual"), "ERROR page should show the rewritten Legend SQL for both paths");
+        assertTrue(errPage.contains("tds_dual") && errPage.contains("rel_dual") && errPage.contains("grammar_dual"), "ERROR page should show the rewritten Legend SQL for every path");
+        assertTrue(errPage.contains("id=\"grammar\""), "ERROR page should have a Grammar path section");
+        assertTrue(errPage.contains("Can&#39;t find a match for function") || errPage.contains("Can't find a match for function"), "ERROR page should surface the Grammar path error");
         assertTrue(errPage.contains("No function matches the given name"), "ERROR page should surface the error message");
         assertFalse(errPage.contains("Differences"), "ERROR path has no result-set diff, so no Differences section should render");
     }

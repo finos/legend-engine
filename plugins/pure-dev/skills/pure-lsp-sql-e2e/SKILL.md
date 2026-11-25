@@ -11,6 +11,12 @@ corpus, the FROM-rewrite and the reference Postgres execution stay in Java, behi
 parse, `sqlToPure`, routing, plan-gen, dialect SQL emission — runs in Pure, so `.pure` edits are
 picked up by a warm LSP session immediately.
 
+A case runs on up to three paths — TDS, Relation and **Grammar**. Grammar emulates the engine's
+`#SQL{...}#` compile in Pure (`parseSqlStatement` → `sqlToPure` → `executionPlan` against
+`e2e::TestMapping`). It skips the Java layer the compiled suite goes through — `ModifiedTranslator`,
+the `SQLExpression` wrapper and routing, pg-wire and the embedded engine HTTP server — so a Grammar
+result is a hypothesis for one more reason.
+
 `pure-sql-e2e` invokes those natives directly with a case id and a mode. **Nothing is generated into
 `framework.pure` and no file is edited to run a case.**
 
@@ -42,22 +48,22 @@ different *value*, e.g. `NULL = NULL` → `true` interpreted vs `NULL` compiled.
 ## Commands
 
 ```bash
-pure-sql-e2e ids   <filter>...            [--mode tds|relation|both]
+pure-sql-e2e ids   <filter>...            [--mode tds|relation|grammar|both|all]
 pure-sql-e2e run   <case-id-or-filter>... [--mode ...] [--serial] [--json]
 pure-sql-e2e case  <case-id>              [--mode ...]
-pure-sql-e2e adhoc "<sql>"                [--mode both]
+pure-sql-e2e adhoc "<sql>"                [--mode tds|relation|grammar|both|all]
 ```
 
 A filter is an exact case id, a category (`structural/joins`), a `prefix*`, or `''` for everything.
 Several can be named at once and are unioned. `--mode` is a single input applied to every case in
-the run and defaults to `both`.
+the run and defaults to `all`; `both` is the pre-Grammar TDS + Relation.
 
 ```bash
 pure-sql-e2e ids   structural/null_semantics
 pure-sql-e2e run   null_equals_null null_not_equals --mode tds
 pure-sql-e2e run   structural/null_semantics --mode tds
 pure-sql-e2e case  null_equals_null --mode tds
-pure-sql-e2e adhoc "SELECT (NULL = NULL) AS result FROM dates WHERE id = 1" --mode both
+pure-sql-e2e adhoc "SELECT (NULL = NULL) AS result FROM dates WHERE id = 1" --mode all
 ```
 
 `run` reports each case as a test entry with its own status, duration and message, streamed as the
@@ -83,7 +89,7 @@ code until it finishes. At tens of seconds of interpreted plan-gen per case, a w
 outlives the edit-test loop this exists to serve.
 
 Narrow with `--mode tds`, or use `ids` (uncapped) to pick a runnable subset. `--mode both` counts as
-two entries per case.
+two entries per case and `--mode all` as three.
 
 ## Setup
 

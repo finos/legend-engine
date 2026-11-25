@@ -54,6 +54,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PostgresServerGenericTest
 {
@@ -185,6 +186,102 @@ public class PostgresServerGenericTest
                         "value\n", execute("select name from tb('pack::CleanDB.cleanTab') as t", "projects|t_group:t_clean:t_version|t_group:t_dep:t_version"));
     }
 
+    @Test
+    public void testRuntimeDefinedInProject() throws Exception
+    {
+        loader.setData(Maps.mutable.with(buildPointer("t_group", "t_runtime", "t_version"), PureGrammarParser.newInstance().parseModel(PERSON_MODEL)));
+
+        updateDB(Lists.mutable.with(
+                "drop table if exists personTab",
+                "CREATE Table personTab(name VARCHAR(200))",
+                "insert into personTab (name) values ('value')",
+                "insert into personTab (name) values ('other')"), h2TestServer.getPort());
+
+        String database = "projects|t_group:t_runtime:t_version";
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", execute("select name from tb('pack::PersonDB.personTab') as t where t.name = 'value'", database, "--runtime=pack::PersonRuntime"));
+
+        String withMapping = "--runtime=pack::PersonRuntime --mapping=pack::PersonMapping";
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", execute("select name from func('pack::people__Relation_1_') as t where t.name = 'value'", database, withMapping));
+        Assert.assertEquals(
+                "name\n" +
+                        "value\n", executePrepared("select name from func('pack::people__Relation_1_') as t where t.name = 'value'", database, withMapping));
+    }
+
+    @Test
+    public void testRuntimeOptionErrors() throws Exception
+    {
+        loader.setData(Maps.mutable.with(buildPointer("t_group", "t_runtime", "t_version"), PureGrammarParser.newInstance().parseModel(PERSON_MODEL)));
+
+        String database = "projects|t_group:t_runtime:t_version";
+        String query = "select name from tb('pack::PersonDB.personTab') as t";
+        assertExecutionError("The options --runtime and --compute can't be combined", query, database, "--runtime=pack::PersonRuntime --compute=test");
+        assertExecutionError("Can't find the packageable element 'pack::MissingRuntime'", query, database, "--runtime=pack::MissingRuntime");
+        assertExecutionError("Invalid runtime path: 'pack::PersonRuntime)->toString('", query, database, "--runtime=pack::PersonRuntime)->toString(");
+        assertExecutionError("The option --mapping requires --runtime", query, database, "--mapping=pack::PersonMapping --compute=test");
+    }
+
+    @Test
+    public void testFailingQueryCallsEngineOnce() throws Exception
+    {
+        loader.setData(Maps.mutable.with(buildPointer("t_group", "t_runtime", "t_version"), PureGrammarParser.newInstance().parseModel(PERSON_MODEL)));
+
+        loader.resetLoadCount();
+        assertExecutionError("Can't find table 'missingTab' in schema 'default' and database 'PersonDB'", "select name from tb('pack::PersonDB.missingTab') as t", "projects|t_group:t_runtime:t_version", "--runtime=pack::PersonRuntime");
+        Assert.assertEquals(1, loader.getLoadCount());
+    }
+
+    private static void assertExecutionError(String expectedMessage, String query, String database, String options)
+    {
+        SQLException e = Assert.assertThrows(SQLException.class, () -> execute(query, database, options));
+        Assert.assertTrue(e.getMessage(), e.getMessage().contains(expectedMessage));
+    }
+
+    private static final String PERSON_MODEL = "###Pure\n" +
+            "Class pack::Person\n" +
+            "{\n" +
+            "  name: String[1];\n" +
+            "}\n" +
+            "\n" +
+            "function pack::people(): meta::pure::metamodel::relation::Relation<(name:String)>[1]\n" +
+            "{\n" +
+            "  pack::Person.all()->project(~[name: x | $x.name])\n" +
+            "}\n" +
+            "\n" +
+            "###Relational\n" +
+            "Database pack::PersonDB\n" +
+            "(\n" +
+            "  Table personTab(name VARCHAR(200) PRIMARY KEY)\n" +
+            ")\n" +
+            "\n" +
+            "###Mapping\n" +
+            "Mapping pack::PersonMapping\n" +
+            "(\n" +
+            "  pack::Person: Relational\n" +
+            "  {\n" +
+            "    name: [pack::PersonDB]personTab.name\n" +
+            "  }\n" +
+            ")\n" +
+            "\n" +
+            "###Connection\n" +
+            "RelationalDatabaseConnection pack::PersonConnection\n" +
+            "{\n" +
+            "  store: pack::PersonDB;\n" +
+            "  type: H2;\n" +
+            "  specification: LocalH2{};\n" +
+            "  auth: DefaultH2;\n" +
+            "}\n" +
+            "\n" +
+            "###Runtime\n" +
+            "Runtime pack::PersonRuntime\n" +
+            "{\n" +
+            "  mappings: [pack::PersonMapping];\n" +
+            "  connections: [pack::PersonDB: [connection_1: pack::PersonConnection]];\n" +
+            "}\n";
+
     private static final String ODBC_CONNECT_QUERY = "select oid, typbasetype from pg_type where typname = 'lo'";
 
     private static ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
@@ -239,10 +336,21 @@ public class PostgresServerGenericTest
     private static class TestModelLoader implements ModelLoader
     {
         MutableMap<PureModelContext, PureModelContextData> data;
+        final AtomicInteger loadCount = new AtomicInteger();
 
         public void setData(MutableMap<PureModelContext, PureModelContextData> data)
         {
             this.data = data;
+        }
+
+        public void resetLoadCount()
+        {
+            loadCount.set(0);
+        }
+
+        public int getLoadCount()
+        {
+            return loadCount.get();
         }
 
         @Override
@@ -254,6 +362,7 @@ public class PostgresServerGenericTest
         @Override
         public PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan)
         {
+            loadCount.incrementAndGet();
             return data.get(context);
         }
 
@@ -277,8 +386,13 @@ public class PostgresServerGenericTest
 
     public static String executePrepared(String query, String database) throws Exception
     {
+        return executePrepared(query, database, "--compute=test");
+    }
+
+    public static String executePrepared(String query, String database, String options) throws Exception
+    {
         try (
-                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + "?options='--compute=test'", new Properties());
+                Connection connection = connect(database, options);
                 PreparedStatement statement = connection.prepareStatement(query);
                 ResultSet resultSet = statement.executeQuery()
         )
@@ -289,8 +403,13 @@ public class PostgresServerGenericTest
 
     public static String execute(String query, String database) throws Exception
     {
+        return execute(query, database, "--compute=test");
+    }
+
+    public static String execute(String query, String database, String options) throws Exception
+    {
         try (
-                Connection connection = DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database + "?options='--compute=test'", new Properties());
+                Connection connection = connect(database, options);
                 Statement statement = connection.createStatement();
         )
         {
@@ -300,6 +419,13 @@ public class PostgresServerGenericTest
                 return convertResultSetToCsvString(resultSet);
             }
         }
+    }
+
+    private static Connection connect(String database, String options) throws SQLException
+    {
+        Properties properties = new Properties();
+        properties.setProperty("options", options);
+        return DriverManager.getConnection("jdbc:postgresql://127.0.0.1:" + testPostgresServer.getLocalAddress().getPort() + "/" + database, properties);
     }
 
     public static PureModelContextPointer buildPointer(String group, String artifact, String version) throws Exception

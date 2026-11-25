@@ -6,6 +6,7 @@ tests:
     category: "multiple_schemas"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: schema_qualified_select_star
     sql: "SELECT * FROM public.departments ORDER BY id"
@@ -13,6 +14,7 @@ tests:
     category: "multiple_schemas"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Schema-qualified in JOIN
   - id: schema_qualified_join
@@ -21,6 +23,7 @@ tests:
     category: "multiple_schemas"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Schema-qualified in subquery
   - id: schema_qualified_subquery
@@ -29,6 +32,7 @@ tests:
     category: "multiple_schemas"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Default schema resolution (unqualified should resolve same as public-qualified)
   - id: schema_default_resolution
@@ -37,6 +41,7 @@ tests:
     category: "multiple_schemas"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # information_schema access
   - id: schema_information_tables
@@ -45,6 +50,7 @@ tests:
     category: "multiple_schemas"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL
 
   - id: schema_information_columns
     sql: "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'persons' ORDER BY 1"
@@ -52,3 +58,4 @@ tests:
     category: "multiple_schemas"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+    expected_grammar_status: FAIL

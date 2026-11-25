@@ -10,6 +10,7 @@ tests:
     category: "tablesample"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: tablesample_system
     sql: "SELECT COUNT(*) FROM persons TABLESAMPLE SYSTEM (50) REPEATABLE (1)"
@@ -17,6 +18,7 @@ tests:
     category: "tablesample"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: tablesample_no_repeatable
     sql: "SELECT COUNT(*) FROM persons TABLESAMPLE BERNOULLI (10)"
@@ -24,4 +26,5 @@ tests:
     category: "tablesample"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 

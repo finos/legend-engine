@@ -23,9 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Collects test results and produces JSON + console report.
@@ -43,42 +47,47 @@ public class ParityReport
 
     public void printSummary()
     {
-        Map<String, CategorySummary> tdsCategories = new HashMap<>();
-        Map<String, CategorySummary> relCategories = new HashMap<>();
-        Counters tdsOverall = new Counters();
-        Counters relOverall = new Counters();
+        Map<ParityPath, Map<String, CategorySummary>> categoriesByPath = new EnumMap<>(ParityPath.class);
+        Map<ParityPath, Counters> overallByPath = new EnumMap<>(ParityPath.class);
+        for (ParityPath path : ParityPath.values())
+        {
+            categoriesByPath.put(path, new LinkedHashMap<>());
+            overallByPath.put(path, new Counters());
+        }
 
         for (TestResult r : results)
         {
-            if ("TDS".equals(r.path))
-            {
-                tdsCategories.computeIfAbsent(r.category, k -> new CategorySummary(k)).add(r.state);
-                tdsOverall.add(r.state);
-            }
-            else
-            {
-                relCategories.computeIfAbsent(r.category, k -> new CategorySummary(k)).add(r.state);
-                relOverall.add(r.state);
-            }
+            ParityPath path = ParityPath.fromLabel(r.path);
+            categoriesByPath.get(path).computeIfAbsent(r.category, k -> new CategorySummary(k)).add(r.state);
+            overallByPath.get(path).add(r.state);
         }
 
         LOGGER.info("\n═══════════════════════════════════════════════════════════════════════════");
         LOGGER.info("POSTGRES PARITY TEST RESULTS");
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════\n");
 
-        for (String cat : tdsCategories.keySet())
+        Set<String> allCategories = new LinkedHashSet<>();
+        for (ParityPath path : ParityPath.values())
         {
-            CategorySummary tds = tdsCategories.get(cat);
-            CategorySummary rel = relCategories.getOrDefault(cat, new CategorySummary(cat));
+            allCategories.addAll(categoriesByPath.get(path).keySet());
+        }
+
+        for (String cat : allCategories)
+        {
             LOGGER.info("Category: " + cat);
-            LOGGER.info("  TDS path:      " + tds.counters);
-            LOGGER.info("  Relation path: " + rel.counters);
+            for (ParityPath path : ParityPath.values())
+            {
+                CategorySummary summary = categoriesByPath.get(path).getOrDefault(cat, new CategorySummary(cat));
+                LOGGER.info(String.format("  %-15s%s", path.label() + " path:", summary.counters));
+            }
             LOGGER.info("");
         }
 
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════");
-        LOGGER.info("OVERALL (TDS):      " + tdsOverall);
-        LOGGER.info("OVERALL (Relation): " + relOverall);
+        for (ParityPath path : ParityPath.values())
+        {
+            LOGGER.info(String.format("%-20s%s", "OVERALL (" + path.label() + "):", overallByPath.get(path)));
+        }
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════\n");
 
         // Print failures
@@ -127,21 +136,25 @@ public class ParityReport
         Map<String, Object> report = new HashMap<>();
 
         // Summary
-        Map<String, Counters> summaryMap = new HashMap<>();
-        summaryMap.put("tds", new Counters());
-        summaryMap.put("relation", new Counters());
+        Map<String, Counters> summaryMap = new LinkedHashMap<>();
+        for (ParityPath path : ParityPath.values())
+        {
+            summaryMap.put(path.reportKey(), new Counters());
+        }
 
         Map<String, Map<String, Counters>> categoryMap = new HashMap<>();
 
         for (TestResult r : results)
         {
-            String pathKey = "TDS".equals(r.path) ? "tds" : "relation";
+            String pathKey = ParityPath.fromLabel(r.path).reportKey();
             summaryMap.get(pathKey).add(r.state);
             categoryMap.computeIfAbsent(r.category, k ->
             {
-                Map<String, Counters> m = new HashMap<>();
-                m.put("tds", new Counters());
-                m.put("relation", new Counters());
+                Map<String, Counters> m = new LinkedHashMap<>();
+                for (ParityPath path : ParityPath.values())
+                {
+                    m.put(path.reportKey(), new Counters());
+                }
                 return m;
             }).get(pathKey).add(r.state);
         }
@@ -153,8 +166,10 @@ public class ParityReport
         {
             Map<String, Object> cat = new HashMap<>();
             cat.put("name", entry.getKey());
-            cat.put("tds", entry.getValue().get("tds"));
-            cat.put("relation", entry.getValue().get("relation"));
+            for (ParityPath path : ParityPath.values())
+            {
+                cat.put(path.reportKey(), entry.getValue().get(path.reportKey()));
+            }
             categories.add(cat);
         }
         report.put("categories", categories);
@@ -223,7 +238,7 @@ public class ParityReport
     {
         public String id;
         public String category;
-        public String path;    // "TDS" or "Relation"
+        public String path;    // ParityPath label: "TDS", "Relation" or "Grammar"
         public String state;   // "PASS", "FAIL", "ERROR", "SKIP", "BUG"
         public String sql;
         public String rewrittenSql;

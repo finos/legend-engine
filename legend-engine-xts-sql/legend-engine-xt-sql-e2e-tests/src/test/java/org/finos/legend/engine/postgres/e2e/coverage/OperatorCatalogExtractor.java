@@ -349,6 +349,7 @@ public class OperatorCatalogExtractor
         public final List<String> memberSignatures = new ArrayList<>();
         public String tdsStatus = "UNTESTED";
         public String relStatus = "UNTESTED";
+        public String grammarStatus = "UNTESTED";
         public OperatorCoverageMapper.SignatureCoverage coverage;
         public String notes = "";
 

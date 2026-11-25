@@ -19,12 +19,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.finos.legend.engine.postgres.e2e.ParityPath;
 import org.finos.legend.engine.postgres.e2e.TestCaseLoader;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,13 +46,14 @@ public class StructuralParityReport
     private static final ObjectMapper MAPPER = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     /**
-     * Per-test result for both paths.
+     * Per-test result for every parity path.
      */
     public static class TestEntry
     {
         public final String testId;
         public String tdsState;
         public String relationState;
+        public String grammarState;
 
         public TestEntry(String testId)
         {
@@ -76,6 +79,11 @@ public class StructuralParityReport
         public int relError;
         public int relSkip;
         public int relUnsupported;
+        public int grammarPass;
+        public int grammarFail;
+        public int grammarError;
+        public int grammarSkip;
+        public int grammarUnsupported;
         public final List<TestEntry> tests = new ArrayList<>();
 
         public FeatureCoverage(String featureName, String categoryName)
@@ -86,42 +94,86 @@ public class StructuralParityReport
 
         public String tdsStatus()
         {
-            int effective = total - tdsSkip - tdsUnsupported;
-            if (effective == 0)
-            {
-                return tdsUnsupported > 0 ? "UNSUPPORTED" : "UNTESTED";
-            }
-            if (tdsPass == effective)
-            {
-                return "PASS";
-            }
-            if (tdsPass > 0)
-            {
-                return "PARTIAL";
-            }
-            if (tdsFail > 0)
-            {
-                return "FAIL";
-            }
-            return "ERROR";
+            return status(tdsPass, tdsFail, tdsSkip, tdsUnsupported);
         }
 
         public String relStatus()
         {
-            int effective = total - relSkip - relUnsupported;
+            return status(relPass, relFail, relSkip, relUnsupported);
+        }
+
+        public String grammarStatus()
+        {
+            return status(grammarPass, grammarFail, grammarSkip, grammarUnsupported);
+        }
+
+        public String status(ParityPath path)
+        {
+            switch (path)
+            {
+                case TDS:
+                    return tdsStatus();
+                case RELATION:
+                    return relStatus();
+                default:
+                    return grammarStatus();
+            }
+        }
+
+        public int pass(ParityPath path)
+        {
+            return counts(path)[0];
+        }
+
+        public int fail(ParityPath path)
+        {
+            return counts(path)[1];
+        }
+
+        public int error(ParityPath path)
+        {
+            return counts(path)[2];
+        }
+
+        public int skip(ParityPath path)
+        {
+            return counts(path)[3];
+        }
+
+        public int unsupported(ParityPath path)
+        {
+            return counts(path)[4];
+        }
+
+        private int[] counts(ParityPath path)
+        {
+            switch (path)
+            {
+                case TDS:
+                    return new int[] {tdsPass, tdsFail, tdsError, tdsSkip, tdsUnsupported};
+                case RELATION:
+                    return new int[] {relPass, relFail, relError, relSkip, relUnsupported};
+                default:
+                    return new int[] {grammarPass, grammarFail, grammarError, grammarSkip, grammarUnsupported};
+            }
+        }
+
+        private String status(int pass, int fail, int skip, int unsupported)
+        {
+            int effective = total - skip - unsupported;
             if (effective == 0)
             {
-                return relUnsupported > 0 ? "UNSUPPORTED" : "UNTESTED";
+                return unsupported > 0 ? "UNSUPPORTED" : "UNTESTED";
             }
-            if (relPass == effective)
+            if (pass == effective)
             {
                 return "PASS";
             }
-            if (relPass > 0)
+            if (pass > 0)
             {
                 return "PARTIAL";
             }
-            if (relFail > 0)
+            if (fail > 0)
             {
                 return "FAIL";
             }
@@ -140,7 +192,7 @@ public class StructuralParityReport
             return; // no structural tests
         }
 
-        Map<String, FailureInfo> failureMap = loadFailures(reportFile);
+        Map<String, CoverageReportSupport.FailureInfo> failureMap = CoverageReportSupport.loadFailures(reportFile);
         new File(outputDir).mkdirs();
         generateJson(categories, outputDir + "/structural-parity.json");
         generateMarkdown(categories, outputDir + "/structural-parity.md", failureMap);
@@ -176,8 +228,10 @@ public class StructuralParityReport
                 {
                     entry.tdsState = "SKIP";
                     entry.relationState = "SKIP";
+                    entry.grammarState = "SKIP";
                     fc.tdsSkip++;
                     fc.relSkip++;
+                    fc.grammarSkip++;
                 }
             }
         }
@@ -240,6 +294,10 @@ public class StructuralParityReport
                         {
                             entry.relationState = resolvedState;
                         }
+                        else if ("Grammar".equals(path) && entry.grammarState == null)
+                        {
+                            entry.grammarState = resolvedState;
+                        }
                     }
                 }
             }
@@ -252,10 +310,12 @@ public class StructuralParityReport
             {
                 fc.tdsPass = fc.tdsFail = fc.tdsError = fc.tdsSkip = fc.tdsUnsupported = 0;
                 fc.relPass = fc.relFail = fc.relError = fc.relSkip = fc.relUnsupported = 0;
+                fc.grammarPass = fc.grammarFail = fc.grammarError = fc.grammarSkip = fc.grammarUnsupported = 0;
                 for (TestEntry e : fc.tests)
                 {
-                    tallyState(e.tdsState, fc, true);
-                    tallyState(e.relationState, fc, false);
+                    tallyState(e.tdsState, fc, ParityPath.TDS);
+                    tallyState(e.relationState, fc, ParityPath.RELATION);
+                    tallyState(e.grammarState, fc, ParityPath.GRAMMAR);
                 }
             }
         }
@@ -263,109 +323,85 @@ public class StructuralParityReport
         return categories;
     }
 
-    private static Map<String, FailureInfo> loadFailures(File reportFile)
+    private void tallyState(String state, FeatureCoverage fc, ParityPath path)
     {
-        Map<String, FailureInfo> map = new LinkedHashMap<>();
-        if (reportFile == null || !reportFile.exists())
-        {
-            return map;
-        }
-
-        try
-        {
-            JsonNode report = MAPPER.readTree(reportFile);
-            JsonNode failures = report.get("failures");
-            if (failures != null)
-            {
-                for (JsonNode f : failures)
-                {
-                    String id = f.has("id") ? f.get("id").asText() : "";
-                    String pathVal = f.has("path") ? f.get("path").asText() : "";
-                    String state = f.has("state") ? f.get("state").asText() : "";
-                    String error = f.has("error") ? f.get("error").asText() : "";
-                    String sql = f.has("sql") ? f.get("sql").asText() : "";
-                    String rewrittenSql = f.has("rewrittenSql") ? f.get("rewrittenSql").asText() : "";
-                    String category = ErrorCategorizer.categorize(state, error);
-                    map.put(id + "|" + pathVal, new FailureInfo(id, pathVal, state, sql, rewrittenSql, error, category));
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            // Silently skip if can't read
-        }
-        return map;
-    }
-
-    private void tallyState(String state, FeatureCoverage fc, boolean isTds)
-    {
+        int pass = 0;
+        int fail = 0;
+        int error = 0;
+        int skip = 0;
+        int unsupported = 0;
         if (state == null)
         {
-            if (isTds)
-            {
-                fc.tdsSkip++;
-            }
-            else
-            {
-                fc.relSkip++;
-            }
-            return;
+            skip = 1;
         }
-        if (isTds)
+        else if ("PASS".equals(state))
         {
-            if ("PASS".equals(state))
-            {
-                fc.tdsPass++;
-            }
-            else if ("FAIL".equals(state))
-            {
-                fc.tdsFail++;
-            }
-            else if ("ERROR".equals(state) || "BUG".equals(state))
-            {
-                fc.tdsError++;
-            }
-            else if (state.startsWith("UNSUPPORTED"))
-            {
-                fc.tdsUnsupported++;
-            }
-            else
-            {
-                fc.tdsSkip++;
-            }
+            pass = 1;
+        }
+        else if ("FAIL".equals(state))
+        {
+            fail = 1;
+        }
+        else if ("ERROR".equals(state) || "BUG".equals(state))
+        {
+            error = 1;
+        }
+        else if (state.startsWith("UNSUPPORTED"))
+        {
+            unsupported = 1;
         }
         else
         {
-            if ("PASS".equals(state))
-            {
-                fc.relPass++;
-            }
-            else if ("FAIL".equals(state))
-            {
-                fc.relFail++;
-            }
-            else if ("ERROR".equals(state) || "BUG".equals(state))
-            {
-                fc.relError++;
-            }
-            else if (state.startsWith("UNSUPPORTED"))
-            {
-                fc.relUnsupported++;
-            }
-            else
-            {
-                fc.relSkip++;
-            }
+            skip = 1;
+        }
+        switch (path)
+        {
+            case TDS:
+                fc.tdsPass += pass;
+                fc.tdsFail += fail;
+                fc.tdsError += error;
+                fc.tdsSkip += skip;
+                fc.tdsUnsupported += unsupported;
+                break;
+            case RELATION:
+                fc.relPass += pass;
+                fc.relFail += fail;
+                fc.relError += error;
+                fc.relSkip += skip;
+                fc.relUnsupported += unsupported;
+                break;
+            default:
+                fc.grammarPass += pass;
+                fc.grammarFail += fail;
+                fc.grammarError += error;
+                fc.grammarSkip += skip;
+                fc.grammarUnsupported += unsupported;
+                break;
         }
     }
 
-    private static int[] countFeatureStatuses(Iterable<FeatureCoverage> features, boolean tds)
+    private static int totalTestsOf(List<FeatureCoverage> features)
+    {
+        return features.stream().mapToInt(fc -> fc.total).sum();
+    }
+
+    private static void appendPathRow(StringBuilder md, String label, java.util.function.Function<ParityPath, String> cell)
+    {
+        md.append("| ").append(label);
+        for (ParityPath path : ParityPath.values())
+        {
+            md.append(" | ").append(cell.apply(path));
+        }
+        md.append(" |\n");
+    }
+
+    private static int[] countFeatureStatuses(Iterable<FeatureCoverage> features, ParityPath path)
     {
         // [pass, partial, fail, error, untested, unsupported]
         int[] c = new int[6];
         for (FeatureCoverage fc : features)
         {
-            String s = tds ? fc.tdsStatus() : fc.relStatus();
+            String s = fc.status(path);
             switch (s)
             {
                 case "PASS":
@@ -406,14 +442,13 @@ public class StructuralParityReport
             }
         }
 
-        int[] tds = countFeatureStatuses(allFeatures, true);
-        int[] rel = countFeatureStatuses(allFeatures, false);
-
         ObjectNode summary = root.putObject("summary");
         summary.put("total_features", allFeatures.size());
         summary.put("total_tests", totalTests);
-        putCounts(summary.putObject("tds"), tds);
-        putCounts(summary.putObject("relation"), rel);
+        for (ParityPath parityPath : ParityPath.values())
+        {
+            putCounts(summary.putObject(parityPath.reportKey()), countFeatureStatuses(allFeatures, parityPath));
+        }
 
         ArrayNode cats = root.putArray("categories");
         for (Map.Entry<String, Map<String, FeatureCoverage>> entry : categories.entrySet())
@@ -426,19 +461,15 @@ public class StructuralParityReport
                 ObjectNode fnNode = features.addObject();
                 fnNode.put("name", fc.featureName);
 
-                ObjectNode tdsNode = fnNode.putObject("tds");
-                tdsNode.put("status", fc.tdsStatus());
-                tdsNode.put("pass", fc.tdsPass);
-                tdsNode.put("fail", fc.tdsFail);
-                tdsNode.put("error", fc.tdsError);
-                tdsNode.put("total", fc.total);
-
-                ObjectNode relNode = fnNode.putObject("relation");
-                relNode.put("status", fc.relStatus());
-                relNode.put("pass", fc.relPass);
-                relNode.put("fail", fc.relFail);
-                relNode.put("error", fc.relError);
-                relNode.put("total", fc.total);
+                for (ParityPath parityPath : ParityPath.values())
+                {
+                    ObjectNode pathNode = fnNode.putObject(parityPath.reportKey());
+                    pathNode.put("status", fc.status(parityPath));
+                    pathNode.put("pass", fc.pass(parityPath));
+                    pathNode.put("fail", fc.fail(parityPath));
+                    pathNode.put("error", fc.error(parityPath));
+                    pathNode.put("total", fc.total);
+                }
 
                 ArrayNode details = fnNode.putArray("testDetails");
                 for (TestEntry te : fc.tests)
@@ -447,6 +478,7 @@ public class StructuralParityReport
                     d.put("id", te.testId);
                     d.put("tds", te.tdsState != null ? te.tdsState : "UNKNOWN");
                     d.put("relation", te.relationState != null ? te.relationState : "UNKNOWN");
+                    d.put("grammar", te.grammarState != null ? te.grammarState : "UNKNOWN");
                 }
             }
         }
@@ -464,58 +496,63 @@ public class StructuralParityReport
         node.put("unsupported", c[5]);
     }
 
-    private void generateMarkdown(Map<String, Map<String, FeatureCoverage>> categories, String path, Map<String, FailureInfo> failureMap) throws IOException
+    private void generateMarkdown(Map<String, Map<String, FeatureCoverage>> categories, String path, Map<String, CoverageReportSupport.FailureInfo> failureMap) throws IOException
     {
         StringBuilder md = new StringBuilder();
         md.append("# SQL Structural Parity — Legend SQL (LegendSql)\n\n");
 
         List<FeatureCoverage> allFeatures = new ArrayList<>();
         int totalTests = 0;
-        int totalTdsPass = 0;
-        int totalTdsFail = 0;
-        int totalTdsError = 0;
-        int totalTdsSkip = 0;
-        int totalTdsUnsupported = 0;
-        int totalRelPass = 0;
-        int totalRelFail = 0;
-        int totalRelError = 0;
-        int totalRelSkip = 0;
-        int totalRelUnsupported = 0;
         for (Map<String, FeatureCoverage> fm : categories.values())
         {
             allFeatures.addAll(fm.values());
             for (FeatureCoverage fc : fm.values())
             {
                 totalTests += fc.total;
-                totalTdsPass += fc.tdsPass;
-                totalTdsFail += fc.tdsFail;
-                totalTdsError += fc.tdsError;
-                totalTdsSkip += fc.tdsSkip;
-                totalTdsUnsupported += fc.tdsUnsupported;
-                totalRelPass += fc.relPass;
-                totalRelFail += fc.relFail;
-                totalRelError += fc.relError;
-                totalRelSkip += fc.relSkip;
-                totalRelUnsupported += fc.relUnsupported;
             }
         }
 
         // Percentages exclude unsupported and skip from denominator
-        int tdsEffective = totalTests - totalTdsSkip - totalTdsUnsupported;
-        int relEffective = totalTests - totalRelSkip - totalRelUnsupported;
-        double tdsPct = tdsEffective > 0 ? (100.0 * totalTdsPass / tdsEffective) : 0;
-        double relPct = relEffective > 0 ? (100.0 * totalRelPass / relEffective) : 0;
+        Map<ParityPath, Integer> passByPath = new EnumMap<>(ParityPath.class);
+        Map<ParityPath, Integer> failByPath = new EnumMap<>(ParityPath.class);
+        Map<ParityPath, Integer> errorByPath = new EnumMap<>(ParityPath.class);
+        Map<ParityPath, Integer> skipByPath = new EnumMap<>(ParityPath.class);
+        Map<ParityPath, Integer> unsupportedByPath = new EnumMap<>(ParityPath.class);
+        Map<ParityPath, Double> passPctByPath = new EnumMap<>(ParityPath.class);
+        for (ParityPath parityPath : ParityPath.values())
+        {
+            int pass = 0;
+            int fail = 0;
+            int error = 0;
+            int skip = 0;
+            int unsupported = 0;
+            for (FeatureCoverage fc : allFeatures)
+            {
+                pass += fc.pass(parityPath);
+                fail += fc.fail(parityPath);
+                error += fc.error(parityPath);
+                skip += fc.skip(parityPath);
+                unsupported += fc.unsupported(parityPath);
+            }
+            int effective = totalTests - skip - unsupported;
+            passByPath.put(parityPath, pass);
+            failByPath.put(parityPath, fail);
+            errorByPath.put(parityPath, error);
+            skipByPath.put(parityPath, skip);
+            unsupportedByPath.put(parityPath, unsupported);
+            passPctByPath.put(parityPath, effective > 0 ? (100.0 * pass / effective) : 0);
+        }
 
         md.append("## Summary\n\n");
-        md.append("| Metric | TDS | Relation |\n|--------|-----|----------|\n");
-        md.append(String.format("| Total features | %d | %d |\n", allFeatures.size(), allFeatures.size()));
-        md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
-        md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", totalTdsUnsupported, totalRelUnsupported));
-        md.append(String.format("| ✅ PASS | %d (%.1f%%) | %d (%.1f%%) |\n", totalTdsPass, tdsPct, totalRelPass, relPct));
-        md.append(String.format("| ❌ FAIL | %d | %d |\n", totalTdsFail, totalRelFail));
-        md.append(String.format("| 💥 ERROR | %d | %d |\n", totalTdsError, totalRelError));
-        md.append(String.format("| ❓ SKIP | %d | %d |\n", totalTdsSkip, totalRelSkip));
-        md.append(String.format("| **Pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
+        md.append("| Metric | TDS | Relation | Grammar |\n|--------|-----|----------|---------|\n");
+        appendPathRow(md, "Total features", parityPath -> String.valueOf(allFeatures.size()));
+        appendPathRow(md, "Total tests", parityPath -> String.valueOf(totalTestsOf(allFeatures)));
+        appendPathRow(md, "⚪ UNSUPPORTED", parityPath -> String.valueOf(unsupportedByPath.get(parityPath)));
+        appendPathRow(md, "✅ PASS", parityPath -> String.format("%d (%.1f%%)", passByPath.get(parityPath), passPctByPath.get(parityPath)));
+        appendPathRow(md, "❌ FAIL", parityPath -> String.valueOf(failByPath.get(parityPath)));
+        appendPathRow(md, "💥 ERROR", parityPath -> String.valueOf(errorByPath.get(parityPath)));
+        appendPathRow(md, "❓ SKIP", parityPath -> String.valueOf(skipByPath.get(parityPath)));
+        appendPathRow(md, "**Pass rate**", parityPath -> String.format("**%.1f%%**", passPctByPath.get(parityPath)));
         md.append("\n_Percentages exclude UNSUPPORTED and SKIP from the denominator._\n");
         md.append("\n---\n\n");
 
@@ -527,15 +564,13 @@ public class StructuralParityReport
             {
                 for (TestEntry te : fc.tests)
                 {
-                    FailureInfo tdsFi = failureMap.get(te.testId + "|TDS");
-                    if (tdsFi != null)
+                    for (ParityPath parityPath : ParityPath.values())
                     {
-                        errorCategoryCounts.computeIfAbsent(tdsFi.category, k -> new int[2])[0]++;
-                    }
-                    FailureInfo relFi = failureMap.get(te.testId + "|Relation");
-                    if (relFi != null)
-                    {
-                        errorCategoryCounts.computeIfAbsent(relFi.category, k -> new int[2])[1]++;
+                        CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, parityPath));
+                        if (fi != null)
+                        {
+                            errorCategoryCounts.computeIfAbsent(fi.category, k -> new int[ParityPath.values().length])[parityPath.ordinal()]++;
+                        }
                     }
                 }
             }
@@ -544,24 +579,24 @@ public class StructuralParityReport
         if (!errorCategoryCounts.isEmpty())
         {
             md.append("## Error Categories\n\n");
-            md.append("| Category | Description | TDS | Relation |\n");
-            md.append("|----------|-------------|-----|----------|\n");
+            md.append("| Category | Description | TDS | Relation | Grammar |\n");
+            md.append("|----------|-------------|-----|----------|---------|\n");
             for (Map.Entry<String, int[]> entry : errorCategoryCounts.entrySet())
             {
                 String catAnchor = entry.getKey().toLowerCase().replace("_", "-");
-                md.append(String.format("| [%s](#%s) | %s | %d | %d |\n",
+                md.append(String.format("| [%s](#%s) | %s | %d | %d | %d |\n",
                         entry.getKey(),
                         catAnchor,
                         ErrorCategorizer.description(entry.getKey()),
-                        entry.getValue()[0], entry.getValue()[1]));
+                        entry.getValue()[0], entry.getValue()[1], entry.getValue()[2]));
             }
             md.append("\n---\n\n");
         }
 
         // Category summary
         md.append("## Category Summary\n\n");
-        md.append("| Category | Features | Tests | TDS PASS | TDS PARTIAL | TDS FAIL | TDS ERROR | TDS UNTESTED | Rel PASS | Rel PARTIAL | Rel FAIL | Rel ERROR | Rel UNTESTED |\n");
-        md.append("|----------|----------|-------|----------|-------------|----------|-----------|--------------|----------|-------------|----------|-----------|-------------|\n");
+        md.append("| Category | Features | Tests | TDS PASS | TDS PARTIAL | TDS FAIL | TDS ERROR | TDS UNTESTED | Rel PASS | Rel PARTIAL | Rel FAIL | Rel ERROR | Rel UNTESTED | Grammar PASS | Grammar PARTIAL | Grammar FAIL | Grammar ERROR | Grammar UNTESTED |\n");
+        md.append("|----------|----------|-------|----------|-------------|----------|-----------|--------------|----------|-------------|----------|-----------|-------------|--------------|-----------------|--------------|---------------|------------------|\n");
 
         for (Map.Entry<String, Map<String, FeatureCoverage>> entry : categories.entrySet())
         {
@@ -571,152 +606,61 @@ public class StructuralParityReport
             {
                 tests += fc.total;
             }
-            int[] ct = countFeatureStatuses(fm.values(), true);
-            int[] cr = countFeatureStatuses(fm.values(), false);
+            int[] ct = countFeatureStatuses(fm.values(), ParityPath.TDS);
+            int[] cr = countFeatureStatuses(fm.values(), ParityPath.RELATION);
+            int[] cg = countFeatureStatuses(fm.values(), ParityPath.GRAMMAR);
             String catAnchor = entry.getKey().toLowerCase().replace(" ", "-");
-            md.append(String.format("| [%s](#%s) | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
+            md.append(String.format("| [%s](#%s) | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
                     entry.getKey(), catAnchor, fm.size(), tests,
                     ct[0], ct[1], ct[2], ct[3], ct[4],
-                    cr[0], cr[1], cr[2], cr[3], cr[4]));
+                    cr[0], cr[1], cr[2], cr[3], cr[4],
+                    cg[0], cg[1], cg[2], cg[3], cg[4]));
         }
         md.append("\n---\n\n");
 
         // Per-category feature tables with colour coding
-        List<ErrorDetailEntry> allErrors = new ArrayList<>();
+        List<CoverageReportSupport.ErrorDetailEntry> allErrors = new ArrayList<>();
 
         for (Map.Entry<String, Map<String, FeatureCoverage>> entry : categories.entrySet())
         {
             String catHeadingAnchor = entry.getKey().toLowerCase().replace(" ", "-");
             md.append("<a id=\"").append(catHeadingAnchor).append("\"></a>\n\n");
             md.append("## ").append(entry.getKey()).append("\n\n");
-            md.append("| | Feature | Tests | TDS | Relation | Error Category |\n");
-            md.append("|--|---------|-------|-----|----------|----------------|\n");
+            md.append("| | Feature | Tests | TDS | Relation | Grammar | Error Category |\n");
+            md.append("|--|---------|-------|-----|----------|---------|----------------|\n");
 
             for (FeatureCoverage fc : entry.getValue().values())
             {
                 String tdsLabel = statusLabel(fc.tdsStatus(), fc.tdsPass, fc.total);
                 String relLabel = statusLabel(fc.relStatus(), fc.relPass, fc.total);
-                String rowEmoji = rowColour(fc.tdsStatus(), fc.relStatus());
+                String grammarLabel = statusLabel(fc.grammarStatus(), fc.grammarPass, fc.total);
+                String rowEmoji = rowColour(fc.tdsStatus(), fc.relStatus(), fc.grammarStatus());
                 String errCat = getFeatureErrorCategory(fc, failureMap);
                 String errLink = getFeatureErrorLink(fc, failureMap, errCat);
 
-                md.append(String.format("| %s | %s | %d | %s | %s | %s |\n",
-                        rowEmoji, fc.featureName, fc.total, tdsLabel, relLabel, errLink));
+                md.append(String.format("| %s | %s | %d | %s | %s | %s | %s |\n",
+                        rowEmoji, fc.featureName, fc.total, tdsLabel, relLabel, grammarLabel, errLink));
 
                 // Collect errors for appendix
                 for (TestEntry te : fc.tests)
                 {
-                    FailureInfo tdsFi = failureMap.get(te.testId + "|TDS");
-                    if (tdsFi != null)
+                    for (ParityPath parityPath : ParityPath.values())
                     {
-                        allErrors.add(new ErrorDetailEntry(te.testId, "TDS", tdsFi.sql, tdsFi.rewrittenSql, tdsFi.error, tdsFi.category));
-                    }
-                    FailureInfo relFi = failureMap.get(te.testId + "|Relation");
-                    if (relFi != null)
-                    {
-                        allErrors.add(new ErrorDetailEntry(te.testId, "Relation", relFi.sql, relFi.rewrittenSql, relFi.error, relFi.category));
+                        CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, parityPath));
+                        if (fi != null)
+                        {
+                            allErrors.add(new CoverageReportSupport.ErrorDetailEntry(te.testId, parityPath.label(), fi.sql, fi.rewrittenSql, fi.error, fi.category));
+                        }
                     }
                 }
             }
             md.append("\n");
         }
 
-        // Error Detail Appendix — organized by category, grouped by test ID
         if (!allErrors.isEmpty())
         {
             md.append("---\n\n");
-            md.append("## Error Details\n\n");
-
-            // Group by category, then by test ID
-            Map<String, Map<String, List<ErrorDetailEntry>>> byCategoryThenTest = new LinkedHashMap<>();
-            for (ErrorDetailEntry e : allErrors)
-            {
-                byCategoryThenTest
-                        .computeIfAbsent(e.category, k -> new LinkedHashMap<>())
-                        .computeIfAbsent(e.testId, k -> new ArrayList<>())
-                        .add(e);
-            }
-
-            for (Map.Entry<String, Map<String, List<ErrorDetailEntry>>> catEntry : byCategoryThenTest.entrySet())
-            {
-                String category = catEntry.getKey();
-                String catAnchor = category.toLowerCase().replace("_", "-");
-                md.append("<a id=\"").append(catAnchor).append("\"></a>\n\n");
-                md.append("### ").append(category);
-                md.append(" (").append(catEntry.getValue().size()).append(" tests)\n\n");
-
-                boolean firstTest = true;
-                for (Map.Entry<String, List<ErrorDetailEntry>> testEntry : catEntry.getValue().entrySet())
-                {
-                    String testId = testEntry.getKey();
-                    List<ErrorDetailEntry> entries = testEntry.getValue();
-
-                    if (!firstTest)
-                    {
-                        md.append("\n<br>\n\n");
-                    }
-                    firstTest = false;
-
-                    // Create anchors for all paths
-                    StringBuilder anchors = new StringBuilder();
-                    for (ErrorDetailEntry e : entries)
-                    {
-                        String anchor = "fail-" + e.testId + "-" + e.path;
-                        anchors.append(String.format("<a id=\"%s\"></a>", anchor));
-                    }
-
-                    md.append("#### ").append(anchors).append("`").append(testId).append("`\n\n");
-
-                    // Check if TDS and Relation have same error and category — if so, merge
-                    if (entries.size() == 2)
-                    {
-                        ErrorDetailEntry e1 = entries.get(0);
-                        ErrorDetailEntry e2 = entries.get(1);
-                        boolean sameError = (e1.error == null ? "" : e1.error).equals(e2.error == null ? "" : e2.error);
-                        boolean sameCategory = e1.category.equals(e2.category);
-
-                        if (sameError && sameCategory)
-                        {
-                            md.append("\uD83D\uDD34 **Failed in both TDS and Relation**\n\n");
-                            md.append("**Input SQL:**\n```sql\n").append(e1.sql != null ? e1.sql : "").append("\n```\n\n");
-                            String legendSql1 = e1.rewrittenSql != null && !e1.rewrittenSql.isEmpty() ? e1.rewrittenSql : "";
-                            String legendSql2 = e2.rewrittenSql != null && !e2.rewrittenSql.isEmpty() ? e2.rewrittenSql : "";
-                            if (!legendSql1.isEmpty() || !legendSql2.isEmpty())
-                            {
-                                if (legendSql1.equals(legendSql2) || legendSql2.isEmpty())
-                                {
-                                    md.append("**Legend SQL:**\n```sql\n").append(legendSql1).append("\n```\n\n");
-                                }
-                                else if (legendSql1.isEmpty())
-                                {
-                                    md.append("**Legend SQL:**\n```sql\n").append(legendSql2).append("\n```\n\n");
-                                }
-                                else
-                                {
-                                    md.append("**Legend SQL (TDS):**\n```sql\n").append(legendSql1).append("\n```\n\n");
-                                    md.append("**Legend SQL (Relation):**\n```sql\n").append(legendSql2).append("\n```\n\n");
-                                }
-                            }
-                            md.append("**Error:**\n> ").append(e1.error != null ? e1.error.replace("\n", "\n> ") : "").append("\n\n");
-                            continue;
-                        }
-                    }
-
-                    // List each path separately
-                    for (ErrorDetailEntry e : entries)
-                    {
-                        String pathEmoji = "TDS".equals(e.path) ? "\uD83D\uDCD8" : "\uD83D\uDCD7";
-                        md.append(String.format("%s **%s Path**\n\n", pathEmoji, e.path));
-                        md.append("**Input SQL:**\n```sql\n").append(e.sql != null ? e.sql : "").append("\n```\n\n");
-                        if (e.rewrittenSql != null && !e.rewrittenSql.isEmpty())
-                        {
-                            md.append("**Legend SQL:**\n```sql\n").append(e.rewrittenSql).append("\n```\n\n");
-                        }
-                        md.append("**Error:**\n> ").append(e.error != null ? e.error.replace("\n", "\n> ") : "").append("\n\n");
-                    }
-                }
-                md.append("\n");
-            }
+            CoverageReportSupport.appendErrorDetailsSection(md, allErrors);
         }
 
         try (FileWriter fw = new FileWriter(path))
@@ -725,25 +669,30 @@ public class StructuralParityReport
         }
     }
 
-    private static String rowColour(String tdsStatus, String relStatus)
+    private static String rowColour(String tdsStatus, String relStatus, String grammarStatus)
     {
-        boolean bothPass = "PASS".equals(tdsStatus) && "PASS".equals(relStatus);
-        boolean bothError = "ERROR".equals(tdsStatus) && "ERROR".equals(relStatus);
-        if (bothPass)
+        List<String> statuses = new ArrayList<>();
+        statuses.add(tdsStatus);
+        statuses.add(relStatus);
+        if (CoverageReportSupport.isRecorded(grammarStatus))
+        {
+            statuses.add(grammarStatus);
+        }
+        boolean allPass = statuses.stream().allMatch("PASS"::equals);
+        boolean allError = statuses.stream().allMatch("ERROR"::equals);
+        if (allPass)
         {
             return "\uD83D\uDFE2"; // 🟢
         }
-        if (bothError)
+        if (allError)
         {
             return "\uD83D\uDD34"; // 🔴
         }
-        if ("PASS".equals(tdsStatus) || "PASS".equals(relStatus)
-                || "PARTIAL".equals(tdsStatus) || "PARTIAL".equals(relStatus))
+        if (statuses.stream().anyMatch(st -> "PASS".equals(st) || "PARTIAL".equals(st)))
         {
             return "\uD83D\uDFE1"; // 🟡
         }
-        if ("ERROR".equals(tdsStatus) || "ERROR".equals(relStatus)
-                || "FAIL".equals(tdsStatus) || "FAIL".equals(relStatus))
+        if (statuses.stream().anyMatch(st -> "ERROR".equals(st) || "FAIL".equals(st)))
         {
             return "\uD83D\uDD34"; // 🔴
         }
@@ -767,63 +716,43 @@ public class StructuralParityReport
         }
     }
 
-    private static String getFeatureErrorCategory(FeatureCoverage fc, Map<String, FailureInfo> failureMap)
+    private static String getFeatureErrorCategory(FeatureCoverage fc, Map<String, CoverageReportSupport.FailureInfo> failureMap)
     {
-        // Collect all distinct error categories for this feature
+        return String.join(", ", featureCategories(fc, failureMap));
+    }
+
+    private static java.util.Set<String> featureCategories(FeatureCoverage fc, Map<String, CoverageReportSupport.FailureInfo> failureMap)
+    {
         java.util.Set<String> categories = new java.util.LinkedHashSet<>();
         for (TestEntry te : fc.tests)
         {
-            FailureInfo fi = failureMap.get(te.testId + "|TDS");
-            if (fi != null)
+            for (ParityPath path : ParityPath.values())
             {
-                categories.add(fi.category);
-            }
-            fi = failureMap.get(te.testId + "|Relation");
-            if (fi != null)
-            {
-                categories.add(fi.category);
+                CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, path));
+                if (fi != null)
+                {
+                    categories.add(fi.category);
+                }
             }
         }
-        if (categories.isEmpty())
-        {
-            return "";
-        }
-        return String.join(", ", categories);
+        return categories;
     }
 
-    private static String getFeatureErrorLink(FeatureCoverage fc, Map<String, FailureInfo> failureMap, String category)
+    private static String getFeatureErrorLink(FeatureCoverage fc, Map<String, CoverageReportSupport.FailureInfo> failureMap, String category)
     {
         if (category.isEmpty())
         {
             return "";
         }
-        // Collect all distinct categories and link each to its Error Details heading
-        java.util.Set<String> categories = new java.util.LinkedHashSet<>();
-        for (TestEntry te : fc.tests)
-        {
-            FailureInfo fi = failureMap.get(te.testId + "|TDS");
-            if (fi != null)
-            {
-                categories.add(fi.category);
-            }
-            fi = failureMap.get(te.testId + "|Relation");
-            if (fi != null)
-            {
-                categories.add(fi.category);
-            }
-        }
-
-        // Build linked list: each category links to its heading, plus link to first error for this feature
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for (String cat : categories)
+        for (String cat : featureCategories(fc, failureMap))
         {
             if (!first)
             {
                 sb.append(", ");
             }
             first = false;
-            // Find the first test in this feature that has this category for an anchor
             String anchor = findFirstAnchorForCategory(fc, failureMap, cat);
             if (anchor != null)
             {
@@ -838,128 +767,65 @@ public class StructuralParityReport
         return sb.toString();
     }
 
-    private static String findFirstAnchorForCategory(FeatureCoverage fc, Map<String, FailureInfo> failureMap, String category)
+    private static String findFirstAnchorForCategory(FeatureCoverage fc, Map<String, CoverageReportSupport.FailureInfo> failureMap, String category)
     {
         for (TestEntry te : fc.tests)
         {
-            FailureInfo fi = failureMap.get(te.testId + "|TDS");
-            if (fi != null && category.equals(fi.category))
+            for (ParityPath path : ParityPath.values())
             {
-                return "fail-" + te.testId + "-TDS";
-            }
-            fi = failureMap.get(te.testId + "|Relation");
-            if (fi != null && category.equals(fi.category))
-            {
-                return "fail-" + te.testId + "-Relation";
+                CoverageReportSupport.FailureInfo fi = failureMap.get(CoverageReportSupport.failureKey(te.testId, path));
+                if (fi != null && category.equals(fi.category))
+                {
+                    return "fail-" + te.testId + "-" + path.label();
+                }
             }
         }
         return null;
-    }
-
-    private static class FailureInfo
-    {
-        final String id;
-        final String path;
-        final String state;
-        final String sql;
-        final String rewrittenSql;
-        final String error;
-        final String category;
-
-        FailureInfo(String id, String path, String state, String sql, String rewrittenSql, String error, String category)
-        {
-            this.id = id;
-            this.path = path;
-            this.state = state;
-            this.sql = sql;
-            this.rewrittenSql = rewrittenSql;
-            this.error = error;
-            this.category = category;
-        }
-    }
-
-    private static class ErrorDetailEntry
-    {
-        final String testId;
-        final String path;
-        final String sql;
-        final String rewrittenSql;
-        final String error;
-        final String category;
-
-        ErrorDetailEntry(String testId, String path, String sql, String rewrittenSql, String error, String category)
-        {
-            this.testId = testId;
-            this.path = path;
-            this.sql = sql;
-            this.rewrittenSql = rewrittenSql;
-            this.error = error;
-            this.category = category;
-        }
     }
 
     public void printConsoleSummary(Map<String, Map<String, FeatureCoverage>> categories)
     {
         List<FeatureCoverage> allFeatures = new ArrayList<>();
         int totalTests = 0;
-        int totalTdsPass = 0;
-        int totalTdsFail = 0;
-        int totalTdsError = 0;
-        int totalTdsUnsupported = 0;
-        int totalRelPass = 0;
-        int totalRelFail = 0;
-        int totalRelError = 0;
-        int totalRelUnsupported = 0;
         for (Map<String, FeatureCoverage> fm : categories.values())
         {
             allFeatures.addAll(fm.values());
             for (FeatureCoverage fc : fm.values())
             {
                 totalTests += fc.total;
-                totalTdsPass += fc.tdsPass;
-                totalTdsFail += fc.tdsFail;
-                totalTdsError += fc.tdsError;
-                totalTdsUnsupported += fc.tdsUnsupported;
-                totalRelPass += fc.relPass;
-                totalRelFail += fc.relFail;
-                totalRelError += fc.relError;
-                totalRelUnsupported += fc.relUnsupported;
             }
         }
-
-        int[] tds = countFeatureStatuses(allFeatures, true);
-        int[] rel = countFeatureStatuses(allFeatures, false);
-
-        int tdsEffective = totalTests - totalTdsUnsupported;
-        int relEffective = totalTests - totalRelUnsupported;
-        double tdsPct = tdsEffective > 0 ? (100.0 * totalTdsPass / tdsEffective) : 0;
-        double relPct = relEffective > 0 ? (100.0 * totalRelPass / relEffective) : 0;
 
         LOGGER.info("");
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════");
         LOGGER.info("SQL STRUCTURAL PARITY — Legend SQL (LegendSql)");
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════");
         LOGGER.info(String.format("  Total features: %d  (%d tests)", allFeatures.size(), totalTests));
-        LOGGER.info(String.format("  Total tests ran (TDS): %d  (pass: %d, fail: %d, error: %d, unsupported: %d)",
-                totalTdsPass + totalTdsFail + totalTdsError, totalTdsPass, totalTdsFail, totalTdsError, totalTdsUnsupported));
-        LOGGER.info(String.format("  Total tests ran (Rel): %d  (pass: %d, fail: %d, error: %d, unsupported: %d)",
-                totalRelPass + totalRelFail + totalRelError, totalRelPass, totalRelFail, totalRelError, totalRelUnsupported));
-        LOGGER.info("");
-        LOGGER.info("  TDS Path:");
-        LOGGER.info(String.format("    ✅ PASS:        %d (%.1f%%)", tds[0], tdsPct));
-        LOGGER.info(String.format("    ⚠️  PARTIAL:     %d", tds[1]));
-        LOGGER.info(String.format("    ❌ FAIL:        %d  (result mismatch)", tds[2]));
-        LOGGER.info(String.format("    💥 ERROR:       %d  (server exception)", tds[3]));
-        LOGGER.info(String.format("    ❓ UNTESTED:    %d", tds[4]));
-        LOGGER.info(String.format("    ⚪ UNSUPPORTED: %d", totalTdsUnsupported));
-        LOGGER.info("");
-        LOGGER.info("  Relation Path:");
-        LOGGER.info(String.format("    ✅ PASS:        %d (%.1f%%)", rel[0], relPct));
-        LOGGER.info(String.format("    ⚠️  PARTIAL:     %d", rel[1]));
-        LOGGER.info(String.format("    ❌ FAIL:        %d  (result mismatch)", rel[2]));
-        LOGGER.info(String.format("    💥 ERROR:       %d  (server exception)", rel[3]));
-        LOGGER.info(String.format("    ❓ UNTESTED:    %d", rel[4]));
-        LOGGER.info(String.format("    ⚪ UNSUPPORTED: %d", totalRelUnsupported));
+        for (ParityPath path : ParityPath.values())
+        {
+            int pass = allFeatures.stream().mapToInt(fc -> fc.pass(path)).sum();
+            int fail = allFeatures.stream().mapToInt(fc -> fc.fail(path)).sum();
+            int error = allFeatures.stream().mapToInt(fc -> fc.error(path)).sum();
+            int unsupported = allFeatures.stream().mapToInt(fc -> fc.unsupported(path)).sum();
+            LOGGER.info(String.format("  Total tests ran (%s): %d  (pass: %d, fail: %d, error: %d, unsupported: %d)",
+                    path == ParityPath.RELATION ? "Rel" : path.label(), pass + fail + error, pass, fail, error, unsupported));
+        }
+        for (ParityPath path : ParityPath.values())
+        {
+            int[] counts = countFeatureStatuses(allFeatures, path);
+            int pass = allFeatures.stream().mapToInt(fc -> fc.pass(path)).sum();
+            int unsupported = allFeatures.stream().mapToInt(fc -> fc.unsupported(path)).sum();
+            int effective = totalTests - unsupported;
+            double passPct = effective > 0 ? (100.0 * pass / effective) : 0;
+            LOGGER.info("");
+            LOGGER.info("  " + path.label() + " Path:");
+            LOGGER.info(String.format("    ✅ PASS:        %d (%.1f%%)", counts[0], passPct));
+            LOGGER.info(String.format("    ⚠️  PARTIAL:     %d", counts[1]));
+            LOGGER.info(String.format("    ❌ FAIL:        %d  (result mismatch)", counts[2]));
+            LOGGER.info(String.format("    💥 ERROR:       %d  (server exception)", counts[3]));
+            LOGGER.info(String.format("    ❓ UNTESTED:    %d", counts[4]));
+            LOGGER.info(String.format("    ⚪ UNSUPPORTED: %d", unsupported));
+        }
         LOGGER.info("═══════════════════════════════════════════════════════════════════════════");
         LOGGER.info("");
     }

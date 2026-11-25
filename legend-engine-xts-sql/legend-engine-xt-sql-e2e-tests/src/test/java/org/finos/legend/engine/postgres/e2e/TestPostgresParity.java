@@ -37,6 +37,7 @@ import org.finos.legend.engine.postgres.e2e.coverage.StructuralParityReport;
 import org.finos.legend.engine.postgres.e2e.coverage.SummaryReport;
 import org.finos.legend.engine.postgres.e2e.coverage.site.DocumentationSiteGenerator;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
+import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.generic.GenericLegendExecution;
 import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.LegendExecutionService;
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
@@ -56,6 +57,7 @@ import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.slf4j.Logger;
@@ -77,6 +79,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -109,6 +112,11 @@ public class TestPostgresParity
     private static Set<String> knownTables;
     private static ResourceExtension resourceTestRule;
     private static Connection legendConnection;
+    private static Connection grammarConnection;
+    private static E2eEngineHttpServer engineServer;
+    private static int enginePort;
+
+    private static final String GRAMMAR_CONNECTION_OPTIONS = "--runtime=e2e::TestRuntime --mapping=e2e::TestMapping";
 
     static final String[] TEST_FILES = {
             "parity-tests/schema.yaml",
@@ -264,12 +272,21 @@ public class TestPostgresParity
         // Driven manually rather than by DropwizardExtensionsSupport: the extension's beforeAll
         // runs before this @BeforeAll, and the builder above needs sqlExecute, which is built here.
         resourceTestRule.before();
+        engineServer = new E2eEngineHttpServer(new ModelManager(DeploymentMode.TEST, new E2eModelLoader(
+                modelData,
+                postgres.getHost(),
+                postgres.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT),
+                postgres.getDatabaseName())));
+        enginePort = engineServer.getPort();
+        assertEveryKnownTableHasGrammarFunction(modelData);
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);
         serverConfig.setHttpPort(0);
         legendServer = new E2eTestPostgresServer(
                 serverConfig,
-                new SQLManager(Lists.mutable.with(new LegendExecutionService(new E2eLegendTestClient(resourceTestRule)))),
+                new SQLManager(Lists.mutable.with(
+                        new LegendExecutionService(new E2eLegendTestClient(resourceTestRule)),
+                        new GenericLegendExecution("http", "127.0.0.1", String.valueOf(enginePort)))),
                 (user, connectionProperties) -> new NoPasswordAuthenticationMethod(new AnonymousIdentityProvider()),
                 new Messages(Throwable::getMessage)
         );
@@ -277,6 +294,12 @@ public class TestPostgresParity
         int port = legendServer.getLocalAddress().getPort();
         legendConnection = DriverManager.getConnection(
                 "jdbc:postgresql://127.0.0.1:" + port + "/postgres", "dummy", "dummy");
+        Properties grammarProperties = new Properties();
+        grammarProperties.setProperty("user", "dummy");
+        grammarProperties.setProperty("password", "dummy");
+        grammarProperties.setProperty("options", GRAMMAR_CONNECTION_OPTIONS);
+        grammarConnection = DriverManager.getConnection(
+                "jdbc:postgresql://127.0.0.1:" + port + "/projects|" + E2eModelLoader.COORDINATES, grammarProperties);
         try
         {
             FunctionCatalogExtractor extractor = new FunctionCatalogExtractor(pgDataSource);
@@ -327,9 +350,24 @@ public class TestPostgresParity
                 LOGGER.debug("Error closing Legend connection", e);
             }
         }
+        if (grammarConnection != null)
+        {
+            try
+            {
+                grammarConnection.close();
+            }
+            catch (Exception e)
+            {
+                LOGGER.debug("Error closing Grammar connection", e);
+            }
+        }
         if (legendServer != null)
         {
             legendServer.shutDown();
+        }
+        if (engineServer != null)
+        {
+            engineServer.shutDown();
         }
         if (resourceTestRule != null)
         {
@@ -346,6 +384,15 @@ public class TestPostgresParity
         {
             throw new AssertionError("Parity tests have failures. See target/parity-report.json for details.");
         }
+    }
+
+    @Test
+    void grammarPlanDiagnosticsReturnGeneratedSql()
+    {
+        String sql = new TestPostgresParity().fetchGrammarGeneratedSql(
+                "SELECT id FROM " + ParityPath.GRAMMAR.tableFunctionCall("persons"));
+        org.junit.jupiter.api.Assertions.assertNotNull(sql);
+        org.junit.jupiter.api.Assertions.assertTrue(sql.toLowerCase().contains("select"), sql);
     }
 
     @TestFactory
@@ -369,11 +416,48 @@ public class TestPostgresParity
                 {
                     continue;
                 }
-                tests.add(DynamicTest.dynamicTest(tc.id + " [TDS]", () -> runTest(tc, category, "TDS")));
-                tests.add(DynamicTest.dynamicTest(tc.id + " [Relation]", () -> runTest(tc, category, "Relation")));
+                for (ParityPath parityPath : enabledPaths())
+                {
+                    tests.add(DynamicTest.dynamicTest(tc.id + " [" + parityPath.label() + "]", () -> runTest(tc, category, parityPath.label())));
+                }
             }
         }
         return tests;
+    }
+
+    private static List<ParityPath> enabledPaths()
+    {
+        String configured = System.getProperty("parity.paths");
+        if (configured == null || configured.isBlank() || "all".equalsIgnoreCase(configured.trim()))
+        {
+            return List.of(ParityPath.values());
+        }
+        List<ParityPath> paths = new ArrayList<>();
+        for (String label : configured.split(","))
+        {
+            paths.add(ParityPath.fromLabel(label.trim()));
+        }
+        return paths;
+    }
+
+    private static void assertEveryKnownTableHasGrammarFunction(PureModelContextData modelData)
+    {
+        Set<String> functionPaths = new HashSet<>();
+        modelData.getElementsOfType(org.finos.legend.engine.protocol.pure.m3.function.Function.class)
+                .forEach(f -> functionPaths.add(f._package + "::" + f.name));
+        List<String> missing = new ArrayList<>();
+        for (String table : knownTables)
+        {
+            String expectedName = ParityPath.GRAMMAR.functionPathFor(table);
+            if (!functionPaths.contains(expectedName))
+            {
+                missing.add(expectedName);
+            }
+        }
+        if (!missing.isEmpty())
+        {
+            throw new IllegalStateException("e2e model has no function with the mangled name expected by the Grammar path: " + missing);
+        }
     }
 
     private void runTest(TestCaseLoader.TestCase tc, String category, String path)
@@ -402,15 +486,14 @@ public class TestPostgresParity
         String rewrittenSql;
         try
         {
+            ParityPath parityPath = ParityPath.fromLabel(path);
             if (Boolean.TRUE.equals(tc.join_func))
             {
-                String prefix = "TDS".equals(path) ? "tds" : "rel";
-                rewrittenSql = "SELECT * FROM func('e2e::" + prefix + "_person_with_dept') ORDER BY \"name\"";
+                rewrittenSql = "SELECT * FROM " + parityPath.joinFunctionCall() + " ORDER BY \"name\"";
             }
             else
             {
-                String prefix = "TDS".equals(path) ? "tds" : "rel";
-                AstFromRewriter rewriter = new AstFromRewriter(prefix, knownTables);
+                AstFromRewriter rewriter = new AstFromRewriter(parityPath, knownTables);
                 rewrittenSql = rewriter.rewrite(tc.sql);
             }
         }
@@ -433,7 +516,7 @@ public class TestPostgresParity
         ResultMatrix actual;
         try
         {
-            actual = executeLegendQuery(rewrittenSql);
+            actual = executeLegendQuery(connectionFor(path), rewrittenSql);
         }
         catch (Exception e)
         {
@@ -479,8 +562,9 @@ public class TestPostgresParity
         }
         else
         {
-            String generatedSql = fetchGeneratedSql(rewrittenSql);
-            String generatedLambda = fetchGeneratedLambda(rewrittenSql);
+            boolean grammar = ParityPath.fromLabel(path) == ParityPath.GRAMMAR;
+            String generatedSql = grammar ? fetchGrammarGeneratedSql(rewrittenSql) : fetchGeneratedSql(rewrittenSql);
+            String generatedLambda = grammar ? grammarLambdaText(rewrittenSql) : fetchGeneratedLambda(rewrittenSql);
 
             report.record(new ParityReport.TestResult(tc.id, category, path, "FAIL", tc.sql, rewrittenSql, generatedSql, generatedLambda, null, comparison.getDiffs(), expectedCmp, actualCmp));
             statusUpdater.recordResult(tc.id, path, "FAIL");
@@ -490,7 +574,7 @@ public class TestPostgresParity
 
     private void assertNoRegression(TestCaseLoader.TestCase tc, String path, String actualStatus, String errorMessage)
     {
-        String expectedStatus = "TDS".equals(path) ? tc.expected_tds_status : tc.expected_rel_status;
+        String expectedStatus = ParityPath.fromLabel(path).expectedStatus(tc);
         if (expectedStatus == null || expectedStatus.equals(actualStatus))
         {
             return;
@@ -503,18 +587,18 @@ public class TestPostgresParity
         {
             String errorInfo = simplifiedError != null ? " Error: " + simplifiedError : "";
             throw new AssertionError("REGRESSION: " + tc.id + "|" + path + " was expected PASS, now " + actualStatus +
-                    "." + errorInfo + " If this is intentional, update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
+                    "." + errorInfo + " If this is intentional, update the test's " + ParityPath.fromLabel(path).statusField() + " in the YAML file.");
         }
         if ("PASS".equals(actualStatus) && !Boolean.getBoolean("parity.ignoreFixDetection"))
         {
             throw new AssertionError("FIX DETECTED: " + tc.id + "|" + path + " was expected " + expectedStatus +
-                    ", now PASS. Update the test's expected_" + path.toLowerCase() + "_status in the YAML file to PASS.");
+                    ", now PASS. Update the test's " + ParityPath.fromLabel(path).statusField() + " in the YAML file to PASS.");
         }
         // Exact-status mismatch (e.g. expected FAIL but got ERROR, or expected ERROR but got FAIL)
         String errorInfo = simplifiedError != null ? "\n  Error: " + simplifiedError : "";
         throw new AssertionError("STATUS MISMATCH: " + tc.id + "|" + path + " was expected " + expectedStatus +
                 ", but got " + actualStatus + "." + errorInfo +
-                "\n  Update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
+                "\n  Update the test's " + ParityPath.fromLabel(path).statusField() + " in the YAML file.");
     }
     
     /**
@@ -611,9 +695,14 @@ public class TestPostgresParity
         return error;
     }
 
-    private ResultMatrix executeLegendQuery(String sql) throws Exception
+    private static Connection connectionFor(String path)
     {
-        try (Statement stmt = legendConnection.createStatement();
+        return ParityPath.fromLabel(path) == ParityPath.GRAMMAR ? grammarConnection : legendConnection;
+    }
+
+    private ResultMatrix executeLegendQuery(Connection connection, String sql) throws Exception
+    {
+        try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql))
         {
             ResultSetMetaData meta = rs.getMetaData();
@@ -661,6 +750,47 @@ public class TestPostgresParity
             LOGGER.debug("Failed to fetch generated lambda for: {}", legendSql, e);
             return null;
         }
+    }
+
+    private static String grammarLambdaText(String sql)
+    {
+        return "#SQL{" + sql + "}#->from(e2e::TestMapping, e2e::TestRuntime)";
+    }
+
+    private String fetchGrammarGeneratedSql(String sql)
+    {
+        try
+        {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            String lambdaJson = postToEngine("pure/v1/grammar/grammarToJson/lambda", "text/plain", grammarLambdaText(sql));
+            com.fasterxml.jackson.databind.node.ObjectNode input = mapper.createObjectNode();
+            input.set("function", mapper.readTree(lambdaJson));
+            input.set("context", mapper.readTree("{\"_type\": \"BaseExecutionContext\"}"));
+            input.set("model", mapper.readTree("{\"_type\": \"pointer\", \"sdlcInfo\": {\"_type\": \"alloy\", \"baseVersion\": \"latest\","
+                    + " \"groupId\": \"" + E2eModelLoader.GROUP_ID + "\", \"artifactId\": \"" + E2eModelLoader.ARTIFACT_ID + "\","
+                    + " \"version\": \"" + E2eModelLoader.VERSION + "\", \"packageableElementPointers\": []}}"));
+            return extractSqlFromPlan(postToEngine("pure/v1/execution/generatePlan", "application/json", mapper.writeValueAsString(input)));
+        }
+        catch (Exception e)
+        {
+            LOGGER.debug("Failed to fetch Grammar generated SQL for: {}", sql, e);
+            return null;
+        }
+    }
+
+    private static String postToEngine(String path, String contentType, String body) throws Exception
+    {
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder(java.net.URI.create("http://127.0.0.1:" + enginePort + "/api/" + path))
+                .header("Content-Type", contentType)
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        java.net.http.HttpResponse<String> response = java.net.http.HttpClient.newBuilder().version(java.net.http.HttpClient.Version.HTTP_1_1).build()
+                .send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200)
+        {
+            throw new IllegalStateException("Engine " + path + " returned " + response.statusCode() + ": " + response.body());
+        }
+        return response.body();
     }
 
     /**

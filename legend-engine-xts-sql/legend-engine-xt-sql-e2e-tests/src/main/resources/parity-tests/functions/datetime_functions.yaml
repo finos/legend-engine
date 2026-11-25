@@ -5,6 +5,7 @@ tests:
     signature: "age(timestamp with time zone) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: age__tstz_tstz__from_table
     sql: "SELECT AGE(tsz::timestamptz, '2000-01-01'::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -12,6 +13,7 @@ tests:
     signature: "age(timestamp with time zone, timestamp with time zone) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: age__ts__from_table
     sql: "SELECT AGE(ts) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -19,6 +21,7 @@ tests:
     signature: "age(timestamp without time zone) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: age__ts_ts__from_table
     sql: "SELECT AGE(ts, '2000-01-01'::timestamp) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -26,6 +29,7 @@ tests:
     signature: "age(timestamp without time zone, timestamp without time zone) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: age__xid__unsupported_type
     sql: "SELECT AGE('100'::xid) AS result FROM persons WHERE id = 1"
@@ -33,6 +37,7 @@ tests:
     signature: "age(xid) → integer"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: clock_timestamp__basic
     sql: "SELECT CASE WHEN CLOCK_TIMESTAMP() > '2020-01-01'::timestamptz THEN 1 ELSE 0 END AS result FROM dates WHERE id = 1"
@@ -40,6 +45,7 @@ tests:
     signature: "clock_timestamp() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: date_part__txt_date__year
     sql: "SELECT DATE_PART('year', d) AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
@@ -47,6 +53,7 @@ tests:
     signature: "date_part(text, date) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: date_part__txt_intv__year
     sql: "SELECT DATE_PART('year', d) AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
@@ -54,6 +61,7 @@ tests:
     signature: "date_part(text, interval) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: date_part__txt_timetz__year
     sql: "SELECT DATE_PART('year', d) AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
@@ -61,6 +69,7 @@ tests:
     signature: "date_part(text, time with time zone) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: date_part__txt_time__year
     sql: "SELECT DATE_PART('year', d) AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
@@ -68,6 +77,7 @@ tests:
     signature: "date_part(text, time without time zone) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: date_part__txt_tstz__from_table
     sql: "SELECT DATE_PART('year', tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -75,6 +85,7 @@ tests:
     signature: "date_part(text, timestamp with time zone) → double precision"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: date_part__txt_ts__year
     sql: "SELECT DATE_PART('year', ts) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -82,6 +93,7 @@ tests:
     signature: "date_part(text, timestamp without time zone) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: date_part__txt_ts__month
     sql: "SELECT DATE_PART('month', ts) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -89,6 +101,7 @@ tests:
     signature: "date_part(text, timestamp without time zone) → double precision"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: date_trunc__txt_intv__from_table
     sql: "SELECT DATE_TRUNC('hour', INTERVAL '3 hours 15 minutes') AS result FROM dates WHERE id = 1"
@@ -96,6 +109,7 @@ tests:
     signature: "date_trunc(text, interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: date_trunc__txt_tstz__from_table
     sql: "SELECT DATE_TRUNC('month', tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -103,6 +117,7 @@ tests:
     signature: "date_trunc(text, timestamp with time zone) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: date_trunc__txt_tstz_txt__from_table
     sql: "SELECT DATE_TRUNC('month', tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -110,6 +125,7 @@ tests:
     signature: "date_trunc(text, timestamp with time zone, text) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: date_trunc__txt_ts__from_table
     sql: "SELECT DATE_TRUNC('month', ts) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -117,6 +133,7 @@ tests:
     signature: "date_trunc(text, timestamp without time zone) → timestamp without time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: extract__txt_date__year
     sql: "SELECT EXTRACT(YEAR FROM d) AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
@@ -124,6 +141,7 @@ tests:
     signature: "extract(text, date) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: extract__txt_intv__from_table
     sql: "SELECT EXTRACT(HOUR FROM INTERVAL '3 hours 15 minutes') AS result FROM dates WHERE id = 1"
@@ -131,6 +149,7 @@ tests:
     signature: "extract(text, interval) → numeric"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: extract__txt_timetz__from_table
     sql: "SELECT EXTRACT(YEAR FROM tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -138,6 +157,7 @@ tests:
     signature: "extract(text, time with time zone) → numeric"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: extract__txt_time__from_table
     sql: "SELECT EXTRACT(YEAR FROM tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -145,6 +165,7 @@ tests:
     signature: "extract(text, time without time zone) → numeric"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: extract__txt_tstz__from_table
     sql: "SELECT EXTRACT(YEAR FROM tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -152,6 +173,7 @@ tests:
     signature: "extract(text, timestamp with time zone) → numeric"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: extract__txt_ts__year
     sql: "SELECT EXTRACT(YEAR FROM ts) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -159,6 +181,7 @@ tests:
     signature: "extract(text, timestamp without time zone) → numeric"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: isfinite__date__from_table
     sql: "SELECT ISFINITE(d) AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
@@ -166,6 +189,7 @@ tests:
     signature: "isfinite(date) → boolean"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: isfinite__intv__from_table
     sql: "SELECT ISFINITE(INTERVAL '1 day') AS result FROM dates WHERE id = 1"
@@ -173,6 +197,7 @@ tests:
     signature: "isfinite(interval) → boolean"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: isfinite__tstz__from_table
     sql: "SELECT ISFINITE(tsz::timestamptz) AS result FROM dates WHERE tsz IS NOT NULL ORDER BY 1"
@@ -180,6 +205,7 @@ tests:
     signature: "isfinite(timestamp with time zone) → boolean"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: isfinite__ts__from_table
     sql: "SELECT ISFINITE(ts) AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
@@ -187,6 +213,7 @@ tests:
     signature: "isfinite(timestamp without time zone) → boolean"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: justify_days__intv__from_table
     sql: "SELECT JUSTIFY_DAYS(INTERVAL '35 days 25 hours') AS result FROM dates WHERE id = 1"
@@ -194,6 +221,7 @@ tests:
     signature: "justify_days(interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: justify_hours__intv__from_table
     sql: "SELECT JUSTIFY_HOURS(INTERVAL '35 days 25 hours') AS result FROM dates WHERE id = 1"
@@ -201,6 +229,7 @@ tests:
     signature: "justify_hours(interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: justify_interval__intv__from_table
     sql: "SELECT JUSTIFY_INTERVAL(INTERVAL '35 days 25 hours') AS result FROM dates WHERE id = 1"
@@ -208,6 +237,7 @@ tests:
     signature: "justify_interval(interval) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: make_date__int_int_int__from_table
     sql: "SELECT MAKE_DATE(2023, 6, 15) AS result FROM dates WHERE id = 1"
@@ -215,6 +245,7 @@ tests:
     signature: "make_date(year integer, month integer, day integer) → date"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: make_interval__sint0_sint0_int0_sint0_sint0_sint0_sdp0.0__from_table
     sql: "SELECT MAKE_INTERVAL(years => 1, months => 2, days => 3) AS result FROM dates WHERE id = 1"
@@ -222,6 +253,7 @@ tests:
     signature: "make_interval(years integer DEFAULT 0, months integer DEFAULT 0, weeks integer DEFAULT 0, days integer DEFAULT 0, hours integer DEFAULT 0, mins integer DEFAULT 0, secs double precision DEFAULT 0.0) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: make_time__int_int_dp__from_table
     sql: "SELECT MAKE_TIME(10, 30, 0.0) AS result FROM dates WHERE id = 1"
@@ -229,6 +261,7 @@ tests:
     signature: "make_time(hour integer, min integer, sec double precision) → time without time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: make_timestamp__int_int_t_int_int_dp__from_table
     sql: "SELECT MAKE_TIMESTAMP(2023, 6, 15, 10, 30, 0.0) AS result FROM dates WHERE id = 1"
@@ -236,6 +269,7 @@ tests:
     signature: "make_timestamp(year integer, month integer, mday integer, hour integer, min integer, sec double precision) → timestamp without time zone"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: make_timestamptz__int_int_t_int_int_dp__from_table
     sql: "SELECT MAKE_TIMESTAMPTZ(2023, 6, 15, 10, 30, 0.0) AS result FROM dates WHERE id = 1"
@@ -243,6 +277,7 @@ tests:
     signature: "make_timestamptz(year integer, month integer, mday integer, hour integer, min integer, sec double precision) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: make_timestamptz__int_int_t_int_int_dp_timezonetxt__from_table
     sql: "SELECT MAKE_TIMESTAMPTZ(2023, 6, 15, 10, 30, 0.0, 'UTC') AS result FROM dates WHERE id = 1"
@@ -250,6 +285,7 @@ tests:
     signature: "make_timestamptz(year integer, month integer, mday integer, hour integer, min integer, sec double precision, timezone text) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: now__basic
     sql: "SELECT CASE WHEN NOW() > '2020-01-01'::timestamptz THEN 1 ELSE 0 END AS result FROM dates WHERE id = 1"
@@ -257,6 +293,7 @@ tests:
     signature: "now() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: statement_timestamp__basic
     sql: "SELECT CASE WHEN STATEMENT_TIMESTAMP() > '2020-01-01'::timestamptz THEN 1 ELSE 0 END AS result FROM dates WHERE id = 1"
@@ -264,6 +301,7 @@ tests:
     signature: "statement_timestamp() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: timeofday__basic
     sql: "SELECT CASE WHEN LENGTH(TIMEOFDAY()) > 0 THEN 1 ELSE 0 END AS result FROM dates WHERE id = 1"
@@ -271,6 +309,7 @@ tests:
     signature: "timeofday() → text"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: to_timestamp__dp__from_table
     sql: "SELECT TO_TIMESTAMP(0) AS result FROM dates WHERE id = 1"
@@ -278,6 +317,7 @@ tests:
     signature: "to_timestamp(double precision) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: to_timestamp__txt_txt__no_generator
     sql: "SELECT TO_TIMESTAMP('2024-01-15', 'YYYY-MM-DD') AS result FROM persons WHERE id = 1"
@@ -285,6 +325,7 @@ tests:
     signature: "to_timestamp(text, text) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: transaction_timestamp__basic
     sql: "SELECT CASE WHEN TRANSACTION_TIMESTAMP() > '2020-01-01'::timestamptz THEN 1 ELSE 0 END AS result FROM dates WHERE id = 1"
@@ -292,6 +333,7 @@ tests:
     signature: "transaction_timestamp() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # === Auto-generated tests for previously UNTESTED signatures ===
   - id: age_timestamp_with_time_zone_cov
@@ -300,6 +342,7 @@ tests:
     signature: "age(timestamp with time zone) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: age_timestamp_without_time_zone_cov
     sql: "SELECT AGE(CAST('2023-01-01' AS TIMESTAMP)) IS NOT NULL AS result FROM persons WHERE id = 1"
@@ -307,6 +350,7 @@ tests:
     signature: "age(timestamp without time zone) → interval"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: age_xid_cov
     sql: "SELECT AGE(NULL) AS result FROM persons WHERE id = 1"
@@ -314,6 +358,7 @@ tests:
     signature: "age(xid) → integer"
     expected_tds_status: BUG
     expected_rel_status: BUG
+    expected_grammar_status: BUG
 
   - id: clock_timestamp_cov
     sql: "SELECT CLOCK_TIMESTAMP() IS NOT NULL AS result FROM persons WHERE id = 1"
@@ -321,6 +366,7 @@ tests:
     signature: "clock_timestamp() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: now_cov
     sql: "SELECT NOW() IS NOT NULL AS result FROM persons WHERE id = 1"
@@ -328,6 +374,7 @@ tests:
     signature: "now() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: statement_timestamp_cov
     sql: "SELECT STATEMENT_TIMESTAMP() IS NOT NULL AS result FROM persons WHERE id = 1"
@@ -335,6 +382,7 @@ tests:
     signature: "statement_timestamp() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: timeofday_cov
     sql: "SELECT TIMEOFDAY() IS NOT NULL AS result FROM persons WHERE id = 1"
@@ -342,6 +390,7 @@ tests:
     signature: "timeofday() → text"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: to_timestamp_text_text_cov
     sql: "SELECT TO_TIMESTAMP('2023-01-15', 'YYYY-MM-DD') IS NOT NULL AS result FROM persons WHERE id = 1"
@@ -349,6 +398,7 @@ tests:
     signature: "to_timestamp(text, text) → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: transaction_timestamp_cov
     sql: "SELECT TRANSACTION_TIMESTAMP() IS NOT NULL AS result FROM persons WHERE id = 1"
@@ -356,3 +406,4 @@ tests:
     signature: "transaction_timestamp() → timestamp with time zone"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR

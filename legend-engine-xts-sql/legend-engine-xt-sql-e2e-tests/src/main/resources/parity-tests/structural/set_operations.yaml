@@ -6,6 +6,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: union_all_different_cols
     sql: "SELECT name AS label, salary AS value FROM persons WHERE id <= 3 UNION ALL SELECT status AS label, amount AS value FROM orders WHERE id <= 3 ORDER BY 1"
@@ -13,6 +14,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: union_all_with_limit
     sql: "SELECT name FROM persons WHERE dept_id = 1 UNION ALL SELECT name FROM persons WHERE dept_id = 2 ORDER BY 1 LIMIT 5"
@@ -20,6 +22,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # UNION (dedup)
   - id: union_dedup
@@ -28,6 +31,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: union_dedup_strings
     sql: "SELECT name FROM persons WHERE age > 30 UNION SELECT name FROM persons WHERE salary > 70000 ORDER BY 1"
@@ -35,6 +39,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Multiple UNIONs
   - id: union_multiple
@@ -43,6 +48,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: union_multiple_mixed
     sql: "SELECT 'dept1' AS src, name FROM persons WHERE dept_id = 1 UNION ALL SELECT 'dept2', name FROM persons WHERE dept_id = 2 ORDER BY 1, 2"
@@ -50,6 +56,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # UNION with aggregates
   - id: union_with_agg
@@ -58,6 +65,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: union_with_agg_sum
     sql: "SELECT 'by_dept' AS label, dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id UNION ALL SELECT 'overall', NULL, SUM(salary) FROM persons WHERE salary IS NOT NULL ORDER BY 1, 2"
@@ -65,6 +73,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # EXCEPT
   - id: except_basic
@@ -73,6 +82,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: except_strings
     sql: "SELECT name FROM persons WHERE dept_id = 1 EXCEPT SELECT name FROM persons WHERE salary > 70000 ORDER BY 1"
@@ -80,6 +90,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: except_with_limit
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL EXCEPT SELECT id as dept_id FROM departments WHERE budget < 600000 ORDER BY 1 LIMIT 5"
@@ -87,6 +98,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: except_multiple
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL EXCEPT SELECT id as dept_id FROM departments WHERE budget < 400000 EXCEPT SELECT id as dept_id FROM departments WHERE budget > 900000 ORDER BY 1"
@@ -94,6 +106,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: except_nulls
     sql: "SELECT age FROM persons EXCEPT SELECT age FROM persons WHERE age > 40 ORDER BY 1"
@@ -101,6 +114,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: except_with_agg
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id EXCEPT SELECT id FROM departments WHERE budget < 600000 ORDER BY 1"
@@ -108,6 +122,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: except_expression
     sql: "SELECT salary * 1.1 AS adjusted FROM persons WHERE dept_id = 1 AND salary IS NOT NULL EXCEPT SELECT salary * 0.9 FROM persons WHERE dept_id = 2 AND salary IS NOT NULL ORDER BY 1"
@@ -115,6 +130,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: except_count
     sql: "SELECT COUNT(*) AS total FROM (SELECT dept_id FROM persons WHERE dept_id IS NOT NULL EXCEPT SELECT id as dept_id FROM departments WHERE budget < 600000) sub"
@@ -122,6 +138,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # INTERSECT
   - id: intersect_basic
@@ -130,6 +147,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: intersect_strings
     sql: "SELECT name FROM persons WHERE age > 30 INTERSECT SELECT name FROM persons WHERE salary > 70000 ORDER BY 1"
@@ -137,6 +155,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: intersect_with_limit
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL AND salary > 50000 INTERSECT SELECT dept_id FROM persons WHERE dept_id IS NOT NULL AND age > 30 ORDER BY 1 LIMIT 5"
@@ -144,6 +163,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: intersect_multiple
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL INTERSECT SELECT dept_id FROM persons WHERE salary > 50000 INTERSECT SELECT dept_id FROM persons WHERE age > 30 ORDER BY 1"
@@ -151,6 +171,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: intersect_nulls
     sql: "SELECT age FROM persons INTERSECT SELECT age FROM persons WHERE age IS NULL ORDER BY 1"
@@ -158,6 +179,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: intersect_with_agg
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id INTERSECT SELECT id FROM departments WHERE budget > 400000 ORDER BY 1"
@@ -165,6 +187,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: intersect_expression
     sql: "SELECT salary * 1.1 AS adjusted FROM persons WHERE dept_id = 1 AND salary IS NOT NULL INTERSECT SELECT salary * 0.9 FROM persons WHERE dept_id = 2 AND salary IS NOT NULL ORDER BY 1"
@@ -172,6 +195,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   - id: intersect_count
     sql: "SELECT COUNT(*) AS total FROM (SELECT dept_id FROM persons WHERE dept_id IS NOT NULL AND salary > 50000 INTERSECT SELECT dept_id FROM persons WHERE dept_id IS NOT NULL AND age > 30) sub"
@@ -179,6 +203,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # Mixed set operations
   - id: except_then_intersect
@@ -187,6 +212,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   - id: union_then_except
     sql: "SELECT dept_id FROM persons WHERE dept_id = 1 UNION ALL SELECT dept_id FROM persons WHERE dept_id = 2 EXCEPT SELECT id as dept_id FROM departments WHERE budget < 400000 ORDER BY 1"
@@ -194,6 +220,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # UNION ALL with NULL values
   - id: union_all_nulls
@@ -202,6 +229,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # UNION ALL with expressions
   - id: union_all_expression
@@ -210,6 +238,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # UNION with CASE
   - id: union_with_case
@@ -218,6 +247,7 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
 
   # UNION ALL count verification
   - id: union_all_count
@@ -226,6 +256,7 @@ tests:
     category: "set_operations"
     expected_tds_status: PASS
     expected_rel_status: PASS
+    expected_grammar_status: PASS
 
   # UNION dedup with NULL
   - id: union_dedup_null
@@ -234,3 +265,4 @@ tests:
     category: "set_operations"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+    expected_grammar_status: ERROR
