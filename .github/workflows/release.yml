@@ -27,6 +27,10 @@ on:
       releaseVersion:
         description: "New release version"
         required: true
+      fullStackVersion:
+        description: "Full stack release: MAJOR.MINOR of the full stack version (e.g. 5.3). Creates branch legend-release-<version> once the release completes. Leave empty for a regular release."
+        required: false
+        default: ""
       dryRun:
         description: "Upload and validate bundles, then drop them without publishing to Central"
         required: false
@@ -48,6 +52,21 @@ jobs:
         run: |
           if ! [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::Release version '$RELEASE_VERSION' is not of the form MAJOR.MINOR.PATCH"
+            exit 1
+          fi
+
+      - name: Check full stack version and release branch
+        env:
+          FULL_STACK_VERSION: ${{ github.event.inputs.fullStackVersion }}
+        run: |
+          [ -n "$FULL_STACK_VERSION" ] || exit 0
+          if ! [[ "$FULL_STACK_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Full stack version '$FULL_STACK_VERSION' is not of the form MAJOR.MINOR"
+            exit 1
+          fi
+          BRANCH="legend-release-${FULL_STACK_VERSION}"
+          if git ls-remote --exit-code --heads "https://github.com/${{ github.repository }}.git" "refs/heads/$BRANCH" ; then
+            echo "::error::Branch $BRANCH already exists -- full stack version $FULL_STACK_VERSION already has a release branch"
             exit 1
           fi
 
@@ -388,6 +407,21 @@ jobs:
             .github/scripts/central-publish.sh publish "$id" < /dev/null
           done < wave2-ids.txt
           .github/scripts/await-wave.sh wave2-ids.txt PUBLISHED
+
+      - name: Create full stack release branch
+        if: ${{ github.event.inputs.dryRun != 'true' && github.event.inputs.fullStackVersion != '' }}
+        env:
+          BRANCH_NAME: legend-release-${{ github.event.inputs.fullStackVersion }}
+          GH_TOKEN: ${{ secrets.FINOS_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git push origin "${GITHUB_SHA}:refs/heads/${BRANCH_NAME}"
+          gh label create "backport ${BRANCH_NAME}" \
+            --repo "${{ github.repository }}" \
+            --color "0E8A16" \
+            --description "Apply to a PR to auto-open a backport PR against ${BRANCH_NAME} when merged" \
+            --force \
+            || echo "::warning::Could not create label 'backport ${BRANCH_NAME}' - create it manually"
 
       - name: Compute and set next SNAPSHOT
         if: ${{ always() && steps.publish_wave1.outcome == 'success' }}
