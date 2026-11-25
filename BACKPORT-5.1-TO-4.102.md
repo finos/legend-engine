@@ -5,8 +5,29 @@ legend-pure, legend-engine, legend-shared and legend-sdlc. legend-depot and
 legend-engine-ide-lsp have neither branch. "Pick" results come from an in-memory
 cherry-pick simulation against 4.102, applied in the order listed.
 
-Most of 5.1 stays put: it is the Java 17, Dropwizard 5, Jetty 12, pac4j 6, Jakarta EE and
-Jackson 2.21 migration. 4.102 remains on Dropwizard 1.3, Jetty 9.4, pac4j 4.5 and Jackson 2.10.
+**Goal:** keep a Java 11 line (4.102) patched with 5.1's fixes, as a fallback in case the
+5.0/5.1 Java 17 upgrade has issues. Most of 5.1 stays put: it is the Java 17, Dropwizard 5,
+Jetty 12, pac4j 6, Jakarta EE and Jackson 2.21 migration. 4.102 remains on Dropwizard 1.3,
+Jetty 9.4, pac4j 4.5 and Jackson 2.10.
+
+## Java 11 compatibility of the picks
+
+4.102 runs on JDK 11 and compiles every module with `maven.compiler.release` 8. On 5.1 the
+same holds for legend-pure and for engine's non-HTTP modules. Engine's 58 HTTP/server modules,
+legend-shared (17) and legend-sdlc (11) moved to newer releases.
+
+- **Every engine pick below except #5480 touches only modules still compiled at release 8 on
+  5.1,** so javac has already held it to the Java 8 API.
+- **#5480** touches `legend-engine-service-post-validation-runner` (release 17 on 5.1). Its change
+  is Java 8-safe (`instanceof` against interfaces, reordered imports); when resolving the
+  conflict keep `javax.ws.rs.core.Response`, not `jakarta`.
+- **legend-pure picks:** release 8 on both branches.
+- **shared #281:** no Java 9+ constructs; the one Jakarta import (`jakarta.servlet.http.Cookie`,
+  in the `BrowserCookieJar` test helper) becomes `javax.servlet.http.Cookie`. Its tests use pac4j
+  6's `CallContext`, so they need rewriting for pac4j 4.5.
+- **Not yet verified:** that picks only call library APIs present in 4.102's dependency versions.
+  The simulation checks text, not compilation, so build and test each repo on JDK 11 after
+  picking.
 
 ## 1. Release order and version pins
 
