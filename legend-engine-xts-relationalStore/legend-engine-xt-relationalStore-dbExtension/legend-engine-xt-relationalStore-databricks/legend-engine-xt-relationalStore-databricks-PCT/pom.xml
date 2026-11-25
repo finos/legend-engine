@@ -118,10 +118,6 @@
                             <skip>false</skip>
                             <forkCount>2</forkCount>
                             <reuseForks>false</reuseForks>
-                            <excludes>
-                                <exclude>**/*$*</exclude>
-                                <exclude>**/Test_Relational_Databricks_SqlOptimizer.java</exclude>
-                            </excludes>
                             <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
                                 <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>

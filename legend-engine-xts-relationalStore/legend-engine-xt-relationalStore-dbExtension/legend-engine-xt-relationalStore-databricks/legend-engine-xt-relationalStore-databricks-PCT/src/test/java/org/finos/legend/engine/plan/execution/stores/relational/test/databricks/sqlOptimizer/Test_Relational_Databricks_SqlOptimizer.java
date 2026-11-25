@@ -31,7 +31,9 @@ import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCompiled;
+import org.junit.Ignore;
 
+@Ignore("Takes over 1.5h on Databricks")
 public class Test_Relational_Databricks_SqlOptimizer
 {
     public static Test suite()
