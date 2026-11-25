@@ -110,7 +110,7 @@ tests:
     signature: chr(integer) → text
     expected_tds_status: PASS
     expected_rel_status: PASS
-    expected_grammar_status: ERROR
+    expected_grammar_status: PASS
 
   - id: concat__variadic__from_table
     sql: SELECT CONCAT(val, '-', nullable_val) AS result FROM strings ORDER BY 1
