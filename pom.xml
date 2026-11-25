@@ -120,7 +120,7 @@
 
     <properties>
         <!-- CI-Friendly Version -->
-        <revision>5.4.1-SNAPSHOT</revision>
+        <revision>5.5.1-SNAPSHOT</revision>
 
         <!-- Legend -->
         <legend.pure.version>5.114.0</legend.pure.version>
