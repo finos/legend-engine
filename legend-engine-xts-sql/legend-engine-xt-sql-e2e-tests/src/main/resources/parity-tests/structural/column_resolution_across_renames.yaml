@@ -132,7 +132,7 @@ tests:
     category: "column_resolution"
     expected_tds_status: PASS
     expected_rel_status: PASS
-    expected_grammar_status: ERROR
+    expected_grammar_status: PASS
 
   # The matching-unaliased-projection guard ('SELECT upper(x) FROM t ORDER BY upper(x)')
   # lives in testTranspile.pure, not here: an unaliased expression projection has an
