@@ -52,6 +52,7 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
 
             nullOrSfe(previousDayOfWeek_Date_1__DayOfWeek_1__Date_1_, [$args->at(1), createExtractEnumValue($enum)])  ;
         }),
+        string('substr', String, {args, fc, expCtx, ctx | processSubstring($args)}),
         aggregate('unique_value_only', Any, {args, fc, expCtx, ctx |
             sfe(uniqueValueOnly_T_MANY__T_$0_1$_, $args->at(0).genericType, $args->at(0).genericType, $args->at(0))
         }),

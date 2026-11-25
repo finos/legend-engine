@@ -56,6 +56,28 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSubstr():Boolean[1]
+{
+  test(
+    'SELECT core_substr(String, 1) AS "FROM1", core_substr(String, 3) AS "FROM3", core_substr(String, 1, 3) AS "FROM1LEN3", ' +
+    'core_substr(String, 2, 3) AS "FROM2LEN3", core_substr(String, Integer, 2) AS "FROMCOL", core_substr(String, 2, Integer) AS "LENCOL", ' +
+    'core_substr(NULL, 1, 2) AS "NULLSTR" FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | substr($row.getString('String'), 0), 'FROM1'),
+          col(row:TDSRow[1] | substr($row.getString('String'), 2), 'FROM3'),
+          col(row:TDSRow[1] | substr($row.getString('String'), 0, 3), 'FROM1LEN3'),
+          col(row:TDSRow[1] | substr($row.getString('String'), 1, 4), 'FROM2LEN3'),
+          col(row:TDSRow[1] | substr($row.getString('String'), $row.getInteger('Integer') - 1, ($row.getInteger('Integer') - 1) + 2), 'FROMCOL'),
+          col(row:TDSRow[1] | substr($row.getString('String'), 1, $row.getInteger('Integer') + 1), 'LENCOL'),
+          col(row:TDSRow[1] | []->cast(@String), 'NULLSTR')
+        ])
+      }
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUniqueValueOnly():Boolean[1]
 {
   test(

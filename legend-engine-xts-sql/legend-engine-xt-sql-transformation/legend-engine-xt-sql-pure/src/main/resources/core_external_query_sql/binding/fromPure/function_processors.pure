@@ -322,8 +322,8 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
       string('starts_with', startsWith_String_1__String_1__Boolean_1_),
       string('strpos', indexOf_String_1__String_1__Integer_1_),
-      string('substr', String, {args, fc, expCtx, ctx | processSubstring($args)}),
-      string('substring', String, {args, fc, expCtx, ctx | processSubstring($args)}),
+      string('substr', String, {args, fc, expCtx, ctx | processLegacySubstring($args)}),
+      string('substring', String, {args, fc, expCtx, ctx | processLegacySubstring($args)}),
       string('upper', toUpper_String_1__String_1_),
       //DATE
       date('date', StrictDate, {args, fc, expCtx, ctx |

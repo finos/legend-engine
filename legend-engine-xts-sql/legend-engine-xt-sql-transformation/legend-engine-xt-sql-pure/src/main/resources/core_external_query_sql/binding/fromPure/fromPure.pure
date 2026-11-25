@@ -4653,13 +4653,62 @@ function meta::external::query::sql::transformation::queryToPure::isFunctionCall
 }
 
 
-function meta::external::query::sql::transformation::queryToPure::processSubstring(args:ValueSpecification[*]):ValueSpecification[1]
+// Kept for backwards compatibility: passes Postgres' one-based start and length straight through to Pure's
+// zero-based substring. Use core_substr for Postgres-correct semantics.
+function meta::external::query::sql::transformation::queryToPure::processLegacySubstring(args:ValueSpecification[*]):ValueSpecification[1]
 {
   assert($args->size() == 2 || $args->size() == 3, 'invalid number of args for substring');
 
   let func = if ($args->size() == 2, | substring_String_1__Integer_1__String_1_, | substring_String_1__Integer_1__Integer_1__String_1_);
 
   nullOrSfe($func, $args);
+}
+
+function meta::external::query::sql::transformation::queryToPure::processSubstring(args:ValueSpecification[*]):ValueSpecification[1]
+{
+  assert($args->size() == 2 || $args->size() == 3, 'invalid number of args for substring');
+
+  // Postgres takes a one-based start and a length; Pure substr takes a zero-based start and an exclusive end
+  if ($args->exists(a | $a->isNull()),
+    | iv([], ^GenericType(rawType = String)),
+    | let start = $args->at(1)->offsetInteger(-1);
+      if ($args->size() == 2,
+        | sfe(substr_String_1__Integer_1__String_1_, [$args->at(0), $start]),
+        | sfe(substr_String_1__Integer_1__Integer_1__String_1_, [$args->at(0), $start, addIntegers($start, $args->at(2))]));
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::integerLiteral(v:ValueSpecification[1]):Integer[0..1]
+{
+  $v->match([
+    i:InstanceValue[1] | $i.values->match([n:Integer[1] | $n, a:Any[*] | []]),
+    v:ValueSpecification[1] | []
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::offsetInteger(v:ValueSpecification[1], offset:Integer[1]):ValueSpecification[1]
+{
+  let literal = $v->integerLiteral();
+  if ($literal->isNotEmpty(),
+    | iv($literal->toOne() + $offset),
+    | if ($offset < 0,
+        | sfe(minus_Integer_MANY__Integer_1_, iv([$v, iv(abs($offset))])),
+        | sfe(plus_Integer_MANY__Integer_1_, iv([$v, iv($offset)]))));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::addIntegers(a:ValueSpecification[1], b:ValueSpecification[1]):ValueSpecification[1]
+{
+  let aLiteral = $a->integerLiteral();
+  let bLiteral = $b->integerLiteral();
+  if ($aLiteral == 0,
+    | $b,
+    | if ($bLiteral == 0,
+        | $a,
+        | if ($aLiteral->isNotEmpty(),
+            | $b->offsetInteger($aLiteral->toOne()),
+            | if ($bLiteral->isNotEmpty(),
+                | $a->offsetInteger($bLiteral->toOne()),
+                | sfe(plus_Integer_MANY__Integer_1_, iv([$a, $b]))))));
 }
 
 function meta::external::query::sql::transformation::queryToPure::processRound(args:ValueSpecification[*]):ValueSpecification[1]
