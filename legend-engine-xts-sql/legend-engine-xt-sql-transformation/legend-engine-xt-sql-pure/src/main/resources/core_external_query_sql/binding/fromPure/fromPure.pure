@@ -148,8 +148,115 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
 
             sfe($func, $parameterValues);
           }
+     ),
+     ^DynamicSQLSource(
+          type = 'service',
+          func = x:String[1]|1,
+          generationFunction = {x:TableFunction[1], s:SqlTransformContext[1] | serviceSourceExpression($x, $s)}
      )
     ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraDynamicSQLSources);
+}
+
+Class meta::external::query::sql::transformation::queryToPure::ServiceSourceExecution
+{
+  func: FunctionDefinition<Any>[1];
+  mapping: meta::pure::mapping::Mapping[0..1];
+  runtime: meta::core::runtime::Runtime[0..1];
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::serviceSourceExpression(tableFunction:TableFunction[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let arguments = $tableFunction.functionCall.arguments->extractSourceArguments();
+
+  let patternArgument = $arguments->filter(a | $a.name == 'pattern')->concatenate($arguments->filter(a | $a.name->isEmpty() && $a.index == 0))->first();
+  assert($patternArgument->isNotEmpty() && $patternArgument.value->size() == 1 && $patternArgument.value->toOne()->instanceOf(String), | 'service sources need the service pattern as their first argument');
+  let pattern = $patternArgument.value->toOne()->cast(@String);
+
+  let service = findServiceByPattern($pattern, $context.extraPackageableElements);
+  let execution = resolveServiceExecution($service, $arguments);
+
+  // TODO: the service's executionOptions are not applied; the compiled service model does not carry them yet
+  let packageableRuntime = $execution.runtime->map(r | $context.extraPackageableElements->filter(e | $e->instanceOf(PackageableRuntime))->cast(@PackageableRuntime)->filter(pr | $pr.runtimeValue == $r)->first());
+  assert($execution.runtime->isEmpty() || $packageableRuntime->isNotEmpty(), | 'service \'' + $pattern + '\' uses an embedded runtime, which service sources do not support; use a PackageableRuntime');
+
+  let func = $execution.func;
+  let returnType = $func->functionReturnType().rawType->toOne();
+  let isTds = $returnType->subTypeOf(meta::pure::tds::TabularDataSet);
+  assert($isTds || $returnType->subTypeOf(meta::pure::metamodel::relation::Relation), | 'service sources must return a Relation or TabularDataSet; \'' + $pattern + '\' returns ' + $returnType->elementToPath());
+
+  let parameterArguments = $arguments->filter(a | $a.name->isNotEmpty() && $a.name != 'pattern');
+  assertNoMissingArguments($parameterArguments, $func);
+  // TODO: an argument that refers to a variable named like a service parameter (min => var('min')) is captured by these lets
+  let parameterLets = $func->getParameters()->evaluateAndDeactivate()->map(p |
+    let typedValue = createParameterValue($p, $parameterArguments->filter(a | $a.name == $p.name)->first().value, $context)->asParameterType($p.genericType);
+    sfe(letFunction_String_1__T_m__T_m_, $typedValue.genericType, [], $typedValue.multiplicity, [iv($p.name), $typedValue]);
+  );
+
+  let statements = $parameterLets->concatenate($func->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate());
+  let relationStatements = if($isTds,
+    | let schemaLambda = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = meta::pure::tds::TabularDataSet)), $statements);
+      let relationType = buildRelationType(meta::pure::tds::schema::resolveSchema($schemaLambda, $context.extensions)->map(c |
+        assert($c.type->isNotEmpty() && ($c.type->toOne()->instanceOf(PrimitiveType) || $c.type->toOne()->instanceOf(Enumeration)), | 'column \'' + $c.name + '\' of service \'' + $pattern + '\' has no primitive or enum type');
+        newRelationColumn($c.name, $c.type, ZeroOne);
+      ));
+      $statements->init()->concatenate(createCast($statements->last()->toOne(), $relationType));,
+    | $statements
+  );
+  let resultType = $relationStatements->last()->toOne().genericType;
+  assert($resultType.typeArguments.rawType->filter(t | $t->instanceOf(meta::pure::metamodel::relation::RelationType))->isNotEmpty(), | 'the columns of the Relation returned by service \'' + $pattern + '\' are not known; give its query a concrete relation type');
+
+  let query = lambda(^FunctionType(returnMultiplicity = PureOne, returnType = $resultType), $relationStatements);
+  let evaluated = sfe(eval_Function_1__V_m_, $resultType, [], PureOne, ^InstanceValue(genericType = $query->genericType(), multiplicity = PureOne, values = $query));
+
+  if($packageableRuntime->isEmpty(),
+    | $evaluated,
+    | if($execution.mapping->isEmpty(),
+        | sfe(meta::pure::mapping::from_T_m__PackageableRuntime_1__T_m_, $resultType, [], PureOne, [$evaluated, iv($packageableRuntime->toOne())]),
+        | sfe(meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_, $resultType, [], PureOne, [$evaluated, iv($execution.mapping->toOne()), iv($packageableRuntime->toOne())])
+      )
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::asParameterType(value:ValueSpecification[1], type:GenericType[1]):ValueSpecification[1]
+{
+  let declared = $type.rawType->toOne();
+  let widened = $value->match([
+    i:InstanceValue[1] | if($i.values->isEmpty(), | $i, | iv($i.values->map(v | $v->match([
+        n:Integer[1] | if($declared == Float, | $n->toFloat(), | if($declared == Decimal, | $n->toDecimal(), | $n)),
+        f:Float[1] | if($declared == Decimal, | $f->toDecimal(), | $f),
+        a:Any[1] | $a
+      ])))),
+    v:ValueSpecification[1] | $v
+  ]);
+  let valueType = $widened.genericType.rawType;
+  // only upcasts (including from Nil, the type of an empty value), which never fail at runtime
+  if($valueType->isNotEmpty() && $valueType->toOne() != $declared && $valueType->toOne()->subTypeOf($declared), | createCast($widened, $type), | $widened);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::findServiceByPattern(pattern:String[1], elements:PackageableElement[*]):meta::legend::service::metamodel::Service[1]
+{
+  let services = $elements->filter(e | $e->instanceOf(meta::legend::service::metamodel::Service))->cast(@meta::legend::service::metamodel::Service)->filter(s | $s.pattern == $pattern);
+  assert($services->isNotEmpty(), | 'Can\'t find a service with pattern \'' + $pattern + '\'');
+  assert($services->size() == 1, | 'Found ' + $services->size()->toString() + ' services with pattern \'' + $pattern + '\': ' + $services->map(s | $s->elementToPath())->sort()->joinStrings(', '));
+  $services->toOne();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::resolveServiceExecution(service:meta::legend::service::metamodel::Service[1], arguments:SQLSourceArgument[*]):ServiceSourceExecution[1]
+{
+  assert($service.execution->isNotEmpty(), | 'service \'' + $service.pattern + '\' (' + $service->elementToPath() + ') has no compiled execution; fix the errors reported for that service');
+  $service.execution->toOne()->match([
+    single:meta::legend::service::metamodel::PureSingleExecution[1] |
+      ^ServiceSourceExecution(func = $single.func, mapping = $single.mapping, runtime = $single.runtime),
+    multi:meta::legend::service::metamodel::PureMultiExecution[1] |
+      let key = $arguments->filter(a | $a.name == $multi.executionKey).value;
+      assert($key->size() == 1, | 'missing required parameter values [' + $multi.executionKey + '] for source ');
+      let parameters = $multi.executionParameters->filter(p | $p.key == $key->toOne()->toString());
+      assert($parameters->size() == 1, | 'No execution found for key ' + $key->toOne()->toString());
+      ^ServiceSourceExecution(func = $multi.func, mapping = $parameters->toOne().mapping, runtime = $parameters->toOne().runtime);,
+    e:meta::legend::service::metamodel::Execution[1] |
+      fail('Execution Type Unsupported');
+      ^ServiceSourceExecution(func = {|[]});
+  ]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::assertNoMissingArguments(arguments:SQLSourceArgument[*], func:FunctionDefinition<Any>[1]):Boolean[1]
@@ -227,10 +334,27 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
   sqlToPure($query, $sources, $extraPackages, $scopeVariables, false, false, getLambdaCompiler($compiler));
 }
 
+// For SQL embedded in a model (#SQL): the expression is compiled where it stands, so the from() calls that sources add
+// to scope a query to its mapping and runtime must survive the recompile instead of being re-applied at plan time.
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1], removeFrom:Boolean[1]):Function<Any>[1]
+{
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, false, false, getLambdaCompiler($compiler, $removeFrom));
+}
+
+function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], removeFrom:Boolean[1]):Function<Any>[1]
+{
+  sqlToPure($query, $sources, $extraPackages, $scopeVariables, true, false, {l:LambdaFunction<Any>[1] | compileViaGrammar($l, $removeFrom)});
+}
+
 function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
 {
+  getLambdaCompiler($compiler, true);
+}
+
+function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1], removeFrom:Boolean[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
+{
   {l:LambdaFunction<Any>[1]|
-    let code = $l->removeFrom()->printLambdaDefinition();
+    let code = if($removeFrom, | $l->removeFrom(), | $l)->printLambdaDefinition();
     $compiler->eval($code);
   }
 }
@@ -2587,7 +2711,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let vs = evaluate($d.generationFunction, [list($tableFunc), list($_context)]);
 
         let columns = $vs->match([
-          s:SimpleFunctionExpression[1] | $s->evaluateAndDeactivate().func->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns,
+          s:SimpleFunctionExpression[1] |
+            let expression = $s->evaluateAndDeactivate();
+            // typed like any call, by the expression itself; only an open Relation<Any> falls back to the called
+            // function's compiled body, which depends on compile order
+            let ownRelationType = $expression.genericType.typeArguments.rawType->filter(t | $t->instanceOf(meta::pure::metamodel::relation::RelationType));
+            if($ownRelationType->isNotEmpty(),
+              | $ownRelationType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns,
+              | $expression.func->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->last().genericType.typeArguments.rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns);,
           v:Any[1] | $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
         ]);
 

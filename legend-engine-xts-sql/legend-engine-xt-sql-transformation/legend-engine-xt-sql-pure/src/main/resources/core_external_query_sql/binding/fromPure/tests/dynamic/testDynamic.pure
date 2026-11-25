@@ -152,3 +152,86 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   );
 }
 
+
+function meta::external::query::sql::transformation::queryToPure::tests::dynamic::serviceRuntime(name:String[1]):meta::pure::runtime::PackageableRuntime[1]
+{
+  ^meta::pure::runtime::PackageableRuntime(name = $name, runtimeValue = ^meta::core::runtime::EngineRuntime(mappings = meta::external::query::sql::transformation::queryToPure::tests::dummyMapping, connectionStores = meta::external::query::sql::transformation::queryToPure::tests::dummyConnection()));
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dynamic::transformWithoutRecompile(sql:String[1], extraPacks:PackageableElement[*]):String[1]
+{
+  let transformed = meta::external::query::sql::transformation::queryToPure::sqlToPure(parseSqlStatement($sql)->cast(@Query), meta::external::query::sql::transformation::queryToPure::getSources(), $extraPacks, ^Map<String, ValueSpecification>(), false, false, {l:LambdaFunction<Any>[1] | $l})->cast(@FunctionDefinition<Any>);
+  $transformed->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testServiceSourceReturningRelation():Boolean[1]
+{
+  let runtime = serviceRuntime('relationRuntime');
+  let service = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/relation', {|#>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->select(~[n, o])}, [], $runtime.runtimeValue);
+  assertEquals('|meta::pure::functions::lang::eval(|#>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n,o]))->meta::pure::mapping::from(relationRuntime)->meta::pure::functions::relation::select(~[n])', transformWithoutRecompile('select n from service(\'/svc/relation\')', [$service, $runtime]));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testServiceSourceBindsParameters():Boolean[1]
+{
+  let runtime = serviceRuntime('relationRuntime');
+  let service = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/params', {min:Integer[1], max:Integer[0..1] | #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->filter(r | ($r.o->toOne() > $min) && ($max->isEmpty() || ($r.o->toOne() < $max->toOne())))->select(~[n, o])}, [], $runtime.runtimeValue);
+  assertEquals('|meta::pure::functions::lang::eval(|let min = 2;\n let max = []->meta::pure::functions::lang::cast(@Integer);\n #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::filter(r: (n:meta::pure::precisePrimitives::Varchar(200)[0..1], o:meta::pure::precisePrimitives::Int[0..1])[1]|($r.o->meta::pure::functions::multiplicity::toOne() > $min) && ($max->meta::pure::functions::collection::isEmpty() || ($r.o->meta::pure::functions::multiplicity::toOne() < $max->meta::pure::functions::multiplicity::toOne())))->meta::pure::functions::relation::select(~[n,o]);\n)->meta::pure::mapping::from(relationRuntime)->meta::pure::functions::relation::select(~[n])', transformWithoutRecompile('select n from service(\'/svc/params\', min => 2)', [$service, $runtime]));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testServiceSourceReturningTabularDataSetIsCastToRelation():Boolean[1]
+{
+  let runtime = serviceRuntime('tdsRuntime');
+  let service = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/tds', {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()->project([x | $x.stringIn, x | $x.integerIn], ['String', 'Integer'])}, meta::external::query::sql::transformation::queryToPure::tests::dummyMapping, $runtime.runtimeValue);
+  assertEquals('|meta::pure::functions::lang::eval(|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()->meta::pure::tds::project([x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.stringIn, x: meta::external::query::sql::transformation::queryToPure::tests::FlatInput[1]|$x.integerIn], [\'String\', \'Integer\'])->meta::pure::functions::lang::cast(@meta::pure::metamodel::relation::Relation<(String:String[0..1], Integer:Integer[0..1])>))->meta::pure::mapping::from(meta::external::query::sql::transformation::queryToPure::tests::dummyMapping, tdsRuntime)->meta::pure::functions::relation::select(~[String])', transformWithoutRecompile('select "String" from service(pattern => \'/svc/tds\')', [$service, $runtime]));
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testServiceSourceMultiExecutionUsesTheKeyedExecution():Boolean[1]
+{
+  let runtimeA = serviceRuntime('runtimeA');
+  let runtimeB = serviceRuntime('runtimeB');
+  let service = ^meta::legend::service::metamodel::Service(
+    pattern = '/svc/multi',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^meta::legend::service::metamodel::PureMultiExecution(
+      executionKey = 'env',
+      func = {|#>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->select(~[n])},
+      executionParameters = [
+        ^meta::legend::service::metamodel::KeyedExecutionParameter(key = 'A', mapping = meta::external::query::sql::transformation::queryToPure::tests::dummyMapping, runtime = $runtimeA.runtimeValue),
+        ^meta::legend::service::metamodel::KeyedExecutionParameter(key = 'B', mapping = meta::external::query::sql::transformation::queryToPure::tests::dummyMapping, runtime = $runtimeB.runtimeValue)
+      ]
+    )
+  );
+  assertEquals('|meta::pure::functions::lang::eval(|#>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->meta::pure::functions::relation::select(~[n]))->meta::pure::mapping::from(meta::external::query::sql::transformation::queryToPure::tests::dummyMapping, runtimeB)', transformWithoutRecompile('select n from service(\'/svc/multi\', env => \'B\')', [$service, $runtimeA, $runtimeB]));
+  assertError(|transformWithoutRecompile('select n from service(\'/svc/multi\')', [$service, $runtimeA, $runtimeB]), 'missing required parameter values [env] for source ');
+  assertError(|transformWithoutRecompile('select n from service(\'/svc/multi\', env => \'C\')', [$service, $runtimeA, $runtimeB]), 'No execution found for key C');
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::dynamic::testServiceSourceErrors():Boolean[1]
+{
+  let runtime = serviceRuntime('relationRuntime');
+  let relation = {|#>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->select(~[n])};
+  let service = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/relation', $relation, [], $runtime.runtimeValue);
+
+  assertError(|transformWithoutRecompile('select n from service(\'/svc/missing\')', [$service, $runtime]), 'Can\'t find a service with pattern \'/svc/missing\'');
+
+  assertError(|transformWithoutRecompile('select n from service(\'/svc/relation\')', [^$service(name = 'serviceB'), ^$service(name = 'serviceA'), $runtime]), 'Found 2 services with pattern \'/svc/relation\': serviceA, serviceB');
+
+  let parameterised = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/params', {min:Integer[1] | #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->filter(r | $r.o->toOne() > $min)->select(~[n])}, [], $runtime.runtimeValue);
+  assertError(|transformWithoutRecompile('select n from service(\'/svc/params\')', [$parameterised, $runtime]), 'missing required parameter values [min] for source ');
+
+  let embedded = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/embedded', $relation, [], meta::external::query::sql::transformation::queryToPure::tests::dummyRuntime());
+  assertError(|transformWithoutRecompile('select n from service(\'/svc/embedded\')', [$embedded]), 'service \'/svc/embedded\' uses an embedded runtime, which service sources do not support; use a PackageableRuntime');
+
+  let relationOfAny = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/any', {|meta::external::query::sql::transformation::queryToPure::tests::dynamic::relationOfAny()}, [], $runtime.runtimeValue);
+  assertError(|transformWithoutRecompile('select * from service(\'/svc/any\')', [$relationOfAny, $runtime]), 'the columns of the Relation returned by service \'/svc/any\' are not known; give its query a concrete relation type');
+
+  let classes = meta::external::query::sql::transformation::queryToPure::tests::createService('/svc/classes', {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()}, meta::external::query::sql::transformation::queryToPure::tests::dummyMapping, $runtime.runtimeValue);
+  assertError(|transformWithoutRecompile('select * from service(\'/svc/classes\')', [$classes, $runtime]), 'service sources must return a Relation or TabularDataSet; \'/svc/classes\' returns meta::external::query::sql::transformation::queryToPure::tests::FlatInput');
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dynamic::relationOfAny():meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{meta::external::query::sql::transformation::queryToPure::tests::dynamic::db.tb}#->select(~[n])
+}

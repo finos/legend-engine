@@ -39,6 +39,19 @@ A good rule of thumb is that any elements that are being introspected (beyond re
 The compiler sorts the dependencies based on these prerequisite elements and guarantees that those elements are compiled before your element.
 For instance, `MappingA` depends on `AssociationB` and `MappingC`, and therefore, `AssociationB` and `MappingC` must be compiled first.
 
+The pass runs after the first and second passes of **every** element have finished. The function:
+* May read names, signatures and other first- and second-pass state through the `CompileContext`
+* **MUST NOT** read third-pass output of other elements (function bodies, service executions)
+* **MUST** be thread-safe; elements are processed in parallel when a `ForkJoinPool` is configured
+
+Elements without a declared dependency on each other end up in the same dependency level, where third-pass order is not stable (hash order of paths, or concurrent). An undeclared third-pass read therefore works or fails depending on names, element order or thread scheduling.
+
+Lambdas are walked with `ValueSpecificationPrerequisiteElementsPassBuilder`. Islands inside them (`ClassInstance` values such as `#SQL{...}#`) declare their own prerequisites through `CompilerExtension.getExtraClassInstancePrerequisiteElementsPassProcessors()` or, when a dependency must be resolved through the model, `getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext()`. See [Alloy compiler §9.3](../engineering/architecture/alloy-compiler.md#93-adding-new-class-instance-syntax).
+
+Functions drop every `FUNCTION` pointer, so plain and mutual recursion compile and there is no ordering between function bodies. A relation class mapping walks its inline `~src` lambda but keeps only the pointers its islands declare ([ADR-004](../engineering/decisions/ADR-004-context-aware-classinstance-prerequisites.md)).
+
+The pass also runs outside the per-element error handling: an exception thrown here aborts the whole compilation, partial compilation included. Return nothing for references that cannot be resolved, and let the third pass report them.
+
 The compiler throws an `EngineException` if it finds circular dependencies in these elements. The following Pure grammar demonstrates an example of circular dependencies:
 
 ``` pure

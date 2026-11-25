@@ -1,2 +1,3 @@
 org.finos.legend.engine.sql.compiler.StoreTableFunctionCompilerExtension
 org.finos.legend.engine.sql.compiler.FunctionTableFunctionCompilerExtension
+org.finos.legend.engine.sql.compiler.ServiceTableFunctionCompilerExtension

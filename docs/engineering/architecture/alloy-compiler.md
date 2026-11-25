@@ -483,14 +483,15 @@ The constructor runs the following passes in sequence.
 | # | Phase | Key class / method | Why this order matters |
 |---|-------|--------------------|------------------------|
 | 0 | **Initialisation** | `PureModel` constructor | Must happen before any user elements are touched; builds the `Handlers` registry and registers primitives. |
-| 1 | **Dependency resolution** | `DependencyManagement` (Kahn's algorithm) | Computes a topological sort of element *types* so later passes run in the right order. |
+| 1 | **Class-level dependency resolution** | `DependencyManagement` (Kahn's algorithm) over `Processor.getPrerequisiteClasses()` | Orders element *types* for the first and second passes, per disjoint sub-graph. |
 | 2 | **Pass 0 — Sections + Profiles** | `Processor.processFirstPass` for `SectionIndex` / `Profile` | Import directives must be established before any type name is resolved. |
 | 3 | **First pass — Type shell registration** | `Processor.processElementFirstPass` | Registers every element's path; creates empty "shell" objects so forward references can be resolved in the next pass. |
-| 4 | **Second pass — Body compilation** | `Processor.processElementSecondPass` | Fills in property types, function bodies, mapping bodies — all cross-references, which now work because all shells are registered. |
-| 5 | **Prerequisite elements pass** | `Processor.processPrerequisiteElements` | Computes fine-grained, per-element (not just per-type) dependency edges for the final sort. |
-| 6 | **Milestoning pass** | `Milestoning.java` | Injects synthetic temporal date parameters and qualified properties into temporal associations; must happen after class bodies are fully compiled. |
-| 7 | **Third pass — Final wiring** | `Processor.processElementThirdPass` | Handles anything requiring all elements to be fully compiled (e.g. aggregation-aware mappings). |
-| 8 | **Post-validation** | `*Validator` classes | Domain-specific semantic checks; run last because they require the fully wired graph. |
+| 4 | **Second pass — Cross-references** | `Processor.processElementSecondPass` | Fills in property types, association ends, enumeration mappings and other references to elements whose shells now exist. Function bodies and class mappings are **not** built here (see row 8). |
+| 5 | **Prerequisite elements pass** | `Processor.processPrerequisiteElements` | Runs after **all** first and second passes. Collects per-element dependency edges. |
+| 6 | **Element-level sort** | `DependencyManagement.topologicallySortElements` | Sorts individual elements into **dependency levels**; fails on a cycle. |
+| 7 | **Milestoning pass** | `Milestoning.java` | Injects synthetic temporal date parameters and qualified properties into temporal associations; runs level by level. |
+| 8 | **Third pass — Bodies and final wiring** | `Processor.processElementThirdPass` | Runs level by level. Builds function bodies (including `ClassInstance` islands such as `#SQL`), class mappings (including relation `~src` lambdas), service executions, and anything else that introspects other elements. |
+| 9 | **Post-validation** | `*Validator` classes | Domain-specific semantic checks; run last because they require the fully wired graph. |
 
 > **Why ordering matters:** The first pass deliberately creates empty shells so that **circular
 > references do not cause resolution failures**. A class `A` with a property of type `B` and a
@@ -514,15 +515,17 @@ Before any user elements are touched:
 
 ### 4.2 Dependency Resolution
 
-Elements in `PureModelContextData` can reference each other. Before any compilation pass,
-the compiler builds a **dependency graph** over element types:
+Elements in `PureModelContextData` can reference each other. The compiler orders work with
+**two** sorts, both using `DependencyManagement` (Kahn's algorithm):
 
-- Each `Processor<T>` declares `getPrerequisiteClasses()` — the element types that must be
-  compiled before `T`.
-- `DependencyManagement` runs a topological sort (Kahn's algorithm) to produce batches of
-  independent elements.
-- Disjoint dependency sub-graphs are identified and compiled independently, enabling
-  parallelism when a `ForkJoinPool` is configured.
+- **By element type, for the first and second passes.** Each `Processor<T>` declares
+  `getPrerequisiteClasses()`, the element types whose first and second passes must finish
+  before `T`'s. Disjoint sub-graphs of this type graph are compiled independently, in parallel
+  when a `ForkJoinPool` is configured.
+- **By individual element, for the milestoning and third passes.** After the prerequisite
+  elements pass (§4.6), `topologicallySortElements` sorts the elements into **dependency
+  levels** and fails with `Detected a circular dependency in element prerequisites graph!` on a
+  cycle. See §4.8 for how levels are processed.
 
 ### 4.3 Pass 0 — Section Index + Profile Pass
 
@@ -589,26 +592,51 @@ Extension-contributed element types (each registered by its own `xts-*` module v
 > `META-INF/services/org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension`.
 > See [Contributor Workflow §1](../guides/contributor-workflow.md) for the full step-by-step.
 
-### 4.5 Second Pass — Body Compilation
+### 4.5 Second Pass — Cross-References
 
-`Processor.processElementSecondPass(element, context)` fills in the bodies.
+`Processor.processElementSecondPass(element, context)` resolves an element's own content and
+its references to other elements.
 
-**Purpose:** Resolve cross-references, compile property types, association ends, function
-bodies, class constraints, mapping bodies, connection parameters, etc.
-
-This is where the bulk of semantic analysis happens:
+**Purpose:** Resolve cross-references, compile property types, association ends, enumeration
+mappings, connection parameters, etc. A second pass **must not** introspect the content of
+other elements (see [Defining Compiler Extension Processor](../../compiler/compiler-extension-processor.md)).
 
 - `HelperModelBuilder.buildProperty(...)` resolves property types against the now-populated
   `typesIndex`.
-- `HelperValueSpecificationBuilder.buildLambda(...)` compiles function bodies and constraint
-  expressions into `ValueSpecification` trees.
-- `HelperMappingBuilder` stitches `SetImplementation` objects to their source classes.
+- `MappingCompilerExtension`'s second pass builds enumeration mappings only. Class mappings
+  (`SetImplementation`s, including relation `~src` lambdas), mapping tests and association
+  mappings are built in its third pass (§4.8).
+
+Function bodies are **not** compiled here. `FunctionCompilerExtension`'s second pass is a
+no-op; `HelperValueSpecificationBuilder.buildLambda(...)` builds function bodies, including any
+`ClassInstance` islands inside them, in the third pass (§4.8).
 
 ### 4.6 Prerequisite Elements Pass
 
 A fine-grained pass that computes, for each element, the **specific element paths** (not just
-element types) it depends on. This produces the data needed for the final topological sort of
-*individual* elements (rather than element types), used in the next two passes.
+element types) it depends on. This produces the data for the element-level sort (§4.2) used by
+the milestoning and third passes.
+
+- **When it runs:** after the first and second passes of **every** element have finished, so
+  names, function signatures and handlers, and first-pass attributes (for example a service's
+  `pattern`) are all available.
+- **What it may read:** first- and second-pass state only, never another element's third-pass
+  output (function bodies, service executions). It must be thread-safe: elements are processed
+  in parallel when a `ForkJoinPool` is configured.
+- **Lambdas** are walked with `ValueSpecificationPrerequisiteElementsPassBuilder`. Function
+  calls contribute `FUNCTION` pointers resolved through the handlers.
+- **Islands** (`ClassInstance` values such as `#SQL{...}#`) contribute pointers through
+  `CompilerExtension.getExtraClassInstancePrerequisiteElementsPassProcessors()` (protocol object
+  only), or `getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext()` (also receives
+  the `CompileContext`, for references that aren't paths). See §9.3 and
+  [ADR-004](../decisions/ADR-004-context-aware-classinstance-prerequisites.md).
+- **Functions** drop every `FUNCTION` pointer: a call needs only the callee's signature, and
+  dropping them lets recursion compile. Other element types (for example services) keep every
+  pointer.
+- **Relation class mappings** walk their inline `~src` lambda, but keep only the pointers its
+  islands declare. Its other references, such as a `from()` runtime that lists the mapping
+  itself, would close cycles.
+- A cycle fails compilation with `Detected a circular dependency in element prerequisites graph!`.
 
 ### 4.7 Milestoning Pass
 
@@ -618,8 +646,15 @@ parameters and qualified properties as described in `Milestoning.java`.
 ### 4.8 Third Pass — Final Wiring
 
 `Processor.processElementThirdPass(element, context)` handles anything that must happen after
-second-pass resolution of all elements — for example, finalising aggregation-aware mappings
-that depend on completely compiled class hierarchies.
+second-pass resolution of all elements: function bodies (and the islands inside them), class
+mappings (including relation `~src` lambdas and their islands), service executions, and, for
+example, aggregation-aware mappings that depend on completely compiled class hierarchies.
+
+The third pass runs **one dependency level at a time** (§4.2). Within a level the order is
+**not stable**: it is the hash order of element paths when compiling sequentially, and
+concurrent when a `ForkJoinPool` is configured. So anything that reads another element's
+third-pass output must declare that element in the prerequisite elements pass (§4.6).
+Otherwise it works or fails depending on element names, element order or thread scheduling.
 
 ### 4.9 Post-Validation
 
@@ -639,7 +674,8 @@ errors are collected rather than thrown, allowing the model to be used in a degr
 When a `ForkJoinPool` is provided via `PureModelProcessParameter`, the compiler switches all
 index structures to concurrent (`ConcurrentHashMap`, `ConcurrentHashSet`) and submits passes
 as parallel streams. First and second passes within each disjoint dependency sub-graph are
-parallelised at the element level.
+parallelised at the element level. The milestoning and third passes are parallelised within
+each dependency level; levels act as barriers.
 
 ---
 
@@ -1015,6 +1051,33 @@ getExtraClassInstanceProcessors() {
 
 The key in the map must match the `type` field of the `ClassInstance` protocol node.
 
+#### Declaring prerequisites for an island
+
+The processor above runs during the third pass of the element that contains the island (for
+example a function body). If it reads **another element's third-pass output** (a function
+body, a service execution), that element must be declared as a prerequisite, or the result
+depends on compile order (§4.8). Register a prerequisite processor under the same key:
+
+| Hook | Receives | Use when |
+|---|---|---|
+| `getExtraClassInstancePrerequisiteElementsPassProcessors()` | protocol object, pointer set | the island names its dependencies by path |
+| `getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext()` | protocol object, `CompileContext`, pointer set | a dependency has to be resolved through the model (for example a service by `pattern`) |
+
+If both are registered for one island type, both run and their prerequisites are combined. Each
+processor runs in the prerequisite elements pass (§4.6) and must:
+
+- read only first- and second-pass state;
+- be thread-safe and read-only;
+- **not throw.** This pass runs outside the per-element error handling, so an exception
+  aborts the whole compilation, partial compilation included. Return nothing for references it
+  can't resolve, and let the island's third-pass processor report them against the element.
+
+Inside a function body, `FUNCTION` pointers are dropped, as for calls (§4.6). An island there
+cannot order another function's body before itself, so it should rely on that function's
+signature. Islands in class qualified properties, constraints and association properties get no
+prerequisites at all, because those elements have no prerequisite elements pass. See
+[ADR-004](../decisions/ADR-004-context-aware-classinstance-prerequisites.md).
+
 ---
 
 ## 10. Type Resolution in Depth
@@ -1192,3 +1255,4 @@ repeated requests for the same model version reuse the compiled graph rather tha
 | `FunctionHandler not initialised` | The function's full Pure descriptor doesn't match what's in `legend-pure` metadata; check the function descriptor string matches exactly |
 | Handler validation fails with "Duplicate parameter size" | Two handlers for the same function name have the same parameter count without a discriminating dispatch guard |
 | Type not found in second pass | Element was registered in the wrong index during first pass (e.g. stored in `typesIndex` but looked up via `getStore`) |
+| Compiles or fails depending on element names or order, or only fails under parallel compilation; another element's body, execution or columns look empty | A third-pass read of an element that isn't declared in the prerequisite elements pass (§4.6, §4.8, §9.3) |

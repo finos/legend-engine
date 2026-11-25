@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.dsl.store.valuespecification.constant.classInstance.RelationStoreAccessor;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
@@ -58,6 +59,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.RuntimeInstance;
+import org.finos.legend.engine.shared.core.function.Procedure3;
 
 import java.util.List;
 import java.util.Objects;
@@ -67,6 +69,7 @@ public class ValueSpecificationPrerequisiteElementsPassBuilder implements ValueS
 {
     private final CompileContext context;
     private final Set<PackageableElementPointer> prerequisiteElements;
+    private final Set<String> islandPrerequisitePaths = Sets.mutable.empty();
 
     public ValueSpecificationPrerequisiteElementsPassBuilder(CompileContext context, Set<PackageableElementPointer> prerequisiteElements)
     {
@@ -87,13 +90,29 @@ public class ValueSpecificationPrerequisiteElementsPassBuilder implements ValueS
         return this.prerequisiteElements;
     }
 
+    Set<String> getIslandPrerequisitePaths()
+    {
+        return this.islandPrerequisitePaths;
+    }
+
     @Override
     public Set<PackageableElementPointer> visit(ClassInstance iv)
     {
+        Procedure3<Object, CompileContext, Set<PackageableElementPointer>> extensionWithContext = this.context.getCompilerExtensions().getExtraClassInstancePrerequisiteElementsPassProcessorsWithContext().get(iv.type);
         Procedure2<Object, Set<PackageableElementPointer>> extension = this.context.getCompilerExtensions().getExtraClassInstancePrerequisiteElementsPassProcessors().get(iv.type);
-        if (extension != null)
+        if (extensionWithContext != null || extension != null)
         {
-            extension.value(iv.value, this.prerequisiteElements);
+            Set<PackageableElementPointer> islandPrerequisites = Sets.mutable.empty();
+            if (extensionWithContext != null)
+            {
+                extensionWithContext.value(iv.value, this.context, islandPrerequisites);
+            }
+            if (extension != null)
+            {
+                extension.value(iv.value, islandPrerequisites);
+            }
+            islandPrerequisites.forEach(p -> this.islandPrerequisitePaths.add(p.path));
+            this.prerequisiteElements.addAll(islandPrerequisites);
             return this.prerequisiteElements;
         }
         switch (iv.type)

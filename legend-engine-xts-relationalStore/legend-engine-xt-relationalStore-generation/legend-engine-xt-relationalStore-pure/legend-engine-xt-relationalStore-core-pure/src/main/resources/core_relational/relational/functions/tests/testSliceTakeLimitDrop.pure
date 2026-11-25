@@ -114,6 +114,20 @@ function <<test.Test>> meta::relational::tests::query::take::testLimitFilterInSe
    assertSize($result.values.rows, 0);
 }
 
+function <<test.Test>> meta::relational::tests::query::take::testLimitInsideEvalThenFilterInSequence():Boolean[1]
+{
+   let result = execute(|{|Person.all()->project([x|$x.firstName,x|$x.lastName,x|$x.age],['firstName','lastName','age'])->limit(1)}->eval()->filter(x | $x.getInteger('age') > 25);, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age" from (select top 1 "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root") as "subselect" where "subselect"."age" > 25', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 0);
+}
+
+function <<test.Test>> meta::relational::tests::query::take::testLimitCastFilterInSequence():Boolean[1]
+{
+   let result = execute(|Person.all()->project([x|$x.firstName,x|$x.lastName,x|$x.age],['firstName','lastName','age'])->limit(1)->cast(@TabularDataSet)->filter(x | $x.getInteger('age') > 25);, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "subselect"."firstName" as "firstName", "subselect"."lastName" as "lastName", "subselect"."age" as "age" from (select top 1 "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age" from personTable as "root") as "subselect" where "subselect"."age" > 25', $result->sqlRemoveFormatting());
+   assertSize($result.values.rows, 0);
+}
+
 function <<test.Test>> meta::relational::tests::query::take::testFilterLimitInSequence():Boolean[1]
 {
    let result = execute(|Person.all()->project([x|$x.firstName,x|$x.lastName,x|$x.age],['firstName','lastName','age'])-> filter(x | $x.getInteger('age') > 30)->limit(2);, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());

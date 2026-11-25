@@ -205,6 +205,54 @@ Service demo::H2PersonRatingsRelation
   }
 }
 
+Service demo::H2PersonTop2ByRating
+{
+  pattern: '/personTop2ByRating';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(
+      [
+        x|$x.name,
+        x|$x.ratings
+      ],
+      [
+        'Name',
+        'Ratings'
+      ]
+    )->sort(desc('Ratings'))->take(2);
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
+Service demo::H2PersonTop2ByRatingRelation
+{
+  pattern: '/personTop2ByRatingRelation';
+  owners:
+  [
+    'anonymous1',
+    'anonymous2'
+  ];
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::employee.all()->project(~[
+        Name: x | $x.name,
+        Ratings: x | $x.ratings
+    ])->sort(descending(~Ratings))->limit(2);
+    mapping: demo::DemoRelationalMapping;
+    runtime: demo::H2DemoRuntime;
+  }
+}
+
 Service demo::H2PersonServiceParameterized
 {
   pattern: '/personServiceForNames';

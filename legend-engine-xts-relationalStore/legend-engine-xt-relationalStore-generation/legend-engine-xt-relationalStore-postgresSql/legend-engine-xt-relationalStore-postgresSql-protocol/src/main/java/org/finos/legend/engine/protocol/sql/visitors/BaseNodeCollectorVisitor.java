@@ -160,7 +160,7 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     @Override
     public T visit(ArrayLiteral val)
     {
-        return defaultValue();
+        return collect(val.values);
     }
 
     @Override
@@ -507,10 +507,11 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     @Override
     public T visit(SimpleCaseExpression val)
     {
+        T operand = collect(val.operand);
         T whenClauses = collect(val.whenClauses);
         T defaultValue = collect(val.defaultValue);
 
-        return collate(whenClauses, defaultValue);
+        return collate(operand, whenClauses, defaultValue);
     }
 
     @Override
@@ -522,7 +523,7 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     @Override
     public T visit(SortItem val)
     {
-        return defaultValue();
+        return collect(val.sortKey);
     }
 
     @Override
