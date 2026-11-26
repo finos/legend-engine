@@ -256,6 +256,15 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_",
     "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Filter_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_GroupBy_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Select_Function_1__Boolean_1_",
     "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
   }, {

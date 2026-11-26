@@ -1355,6 +1355,96 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
 }
 
 '''
+An `extend` after a `groupBy` that reads a group key derived before the grouping; the key must be
+read from the grouped output rather than recomputed from the ungrouped column.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, val
+                  1, A, 10
+                  2, A, 20
+                  3, B, 30
+                  4, B, 40
+                  5, C, 50
+                  6, A, 60
+                #->extend(~band:x|if($x.val > 25, |'high', |'low'))
+                 ->groupBy(~[grp, band], ~s:x|$x.val:y|$y->plus())
+                 ->extend(~lbl:x|if(($x.grp == 'A') && ($x.band == 'high'), |'X', |'O'))
+                 ->sort([~grp->ascending(), ~band->ascending()])
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,band,s,lbl\n'+
+                  '   A,high,60,X\n'+
+                  '   A,low,30,O\n'+
+                  '   B,high,70,O\n'+
+                  '   C,high,50,O\n'+
+                  '#', $res->toString());
+}
+
+'''
+A filter on a column extended after a `groupBy`, where the extended column reads a derived group key.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, val
+                  1, A, 10
+                  2, A, 20
+                  3, B, 30
+                  4, B, 40
+                  5, C, 50
+                  6, A, 60
+                #->extend(~band:x|if($x.val > 25, |'high', |'low'))
+                 ->groupBy(~[grp, band], ~s:x|$x.val:y|$y->plus())
+                 ->extend(~lbl:x|if(($x.grp == 'A') && ($x.band == 'high'), |'X', |'O'))
+                 ->filter(x|$x.lbl != 'O')
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,band,s,lbl\n'+
+                  '   A,high,60,X\n'+
+                  '#', $res->toString());
+}
+
+'''
+A second `groupBy` keyed on a column extended after the first `groupBy`.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, grp, val
+                  1, A, 10
+                  2, A, 20
+                  3, B, 30
+                  4, B, 40
+                  5, C, 50
+                  6, A, 60
+                #->extend(~band:x|if($x.val > 25, |'high', |'low'))
+                 ->groupBy(~[grp, band], ~s:x|$x.val:y|$y->plus())
+                 ->extend(~lbl:x|if($x.band == 'high', |'B', |'S'))
+                 ->groupBy(~lbl, ~t:x|$x.s:y|$y->plus())
+                 ->sort(~lbl->ascending())
+              };
+
+    let res =  $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   lbl,t\n'+
+                  '   B,180\n'+
+                  '   S,30\n'+
+                  '#', $res->toString());
+}
+
+'''
 Chained `rename`s over names differing only in case and leading underscores, including renaming a
 column twice; the filter has to resolve the final names.
 '''

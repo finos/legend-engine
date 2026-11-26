@@ -8378,8 +8378,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
    let origSortByByNames = $origSelect.orderBy.column->map(column | $column->extractColumnName());
    
-   let mainQuery = if ($includeOriginalColumns || $f->checkNoSubSelectRequiredForProjectRestrict($origSelect, $projectAliasNames, $origGroupByByNames, $origSortByByNames), 
-                        | $nestedQuery, 
+   // extend over a grouped select must reference the aggregated output, not the pre-aggregation expressions
+   let mainQuery = if (($includeOriginalColumns && $origSelect.groupBy->isEmpty()) || (!$includeOriginalColumns && $f->checkNoSubSelectRequiredForProjectRestrict($origSelect, $projectAliasNames, $origGroupByByNames, $origSortByByNames)),
+                        | $nestedQuery,
                         | isolateTdsSelect($nestedQuery, $extensions)
                       );
 
