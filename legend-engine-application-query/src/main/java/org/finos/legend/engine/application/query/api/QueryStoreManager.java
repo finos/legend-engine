@@ -59,7 +59,7 @@ public class QueryStoreManager
     // so that it records the dataSpace it is created from
     private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
     private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
-    private static final List<String> EXCLUDED_PROJECTION_FIELDS = Arrays.asList("audit.validUntil", "audit.version", "content", "executionContext", "taggedValues", "stereotypes", "defaultParameterValues", "gridConfig");
+    private static final List<String> EXCLUDED_PROJECTION_FIELDS = Arrays.asList("audit.validUntil", "audit.version", "content", "executionContext", "taggedValues", "stereotypes", "defaultParameterValues", "gridConfig", "relationType");
     private static final int GET_QUERIES_LIMIT = 50;
 
     private final MongoClient mongoClient;
