@@ -1,0 +1,15 @@
+name: m2m-nested-if-condition
+title: "M2M plan Java parenthesises an if used as the condition of another if"
+description: |
+  The condition of an if is itself an if. The plan Java must group it as the condition, not as the else branch.
+modelSources:
+  model:
+    root: m2m-nested-if-condition
+    files:
+      - model.pure
+features:
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
