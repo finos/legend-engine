@@ -649,3 +649,37 @@ function meta::external::language::java::factory::tests::assertCode(expectedCode
    assertEquals($expectedCode, $code->codeToString());
    assertEquals($expectedType->meta::external::language::java::serialization::typeToString(), $code.type->meta::external::language::java::serialization::typeToString());
 }
+
+function <<test.Test>> meta::external::language::java::factory::tests::conditionalAsConditionOfConditionalIsParenthesised():Boolean[1]
+{
+   let t = j_variable(javaBoolean(), 't'); let x = j_variable(javaInt(), 'x'); let y = j_variable(javaInt(), 'y');
+   assertEquals('(t ? true : false) ? x : y', j_conditional(j_conditional($t, j_true(), j_false()), $x, $y)->codeToString());
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::conditionalInElseOfConditionalIsNotParenthesised():Boolean[1]
+{
+   let t1 = j_variable(javaBoolean(), 't1'); let t2 = j_variable(javaBoolean(), 't2');
+   let x = j_variable(javaInt(), 'x'); let y = j_variable(javaInt(), 'y'); let z = j_variable(javaInt(), 'z');
+   assertEquals('t1 ? x : t2 ? y : z', j_conditional($t1, $x, j_conditional($t2, $y, $z))->codeToString());
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::conditionalInThenOfConditionalIsNotParenthesised():Boolean[1]
+{
+   let t1 = j_variable(javaBoolean(), 't1'); let t2 = j_variable(javaBoolean(), 't2');
+   let x = j_variable(javaInt(), 'x'); let y = j_variable(javaInt(), 'y'); let z = j_variable(javaInt(), 'z');
+   assertEquals('t1 ? t2 ? x : y : z', j_conditional($t1, j_conditional($t2, $x, $y), $z)->codeToString());
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::conditionalNestedTwiceInConditionIsParenthesisedAtEachLevel():Boolean[1]
+{
+   let t = j_variable(javaBoolean(), 't'); let x = j_variable(javaInt(), 'x'); let y = j_variable(javaInt(), 'y');
+   let inner  = j_conditional($t, j_true(), j_false());
+   let middle = j_conditional($inner, j_true(), j_false());
+   assertEquals('((t ? true : false) ? true : false) ? x : y', j_conditional($middle, $x, $y)->codeToString());
+}
+
+function <<test.Test>> meta::external::language::java::factory::tests::relationalConditionOfConditionalIsNotParenthesised():Boolean[1]
+{
+   let a = j_variable(javaInt(), 'a'); let b = j_variable(javaInt(), 'b'); let x = j_variable(javaInt(), 'x'); let y = j_variable(javaInt(), 'y');
+   assertEquals('a < b ? x : y', j_conditional(j_lt($a, $b), $x, $y)->codeToString());
+}

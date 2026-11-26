@@ -513,7 +513,7 @@ function <<access.private>> meta::external::language::java::serialization::doCod
                                         |$sfer->addText($c.op)->maybeParentheses($c.expression, $c);
                                         );,
       c:PostfixExpression[1]        | $sfer->maybeParentheses($c.expression, $c)->addText($c.op),
-      c:Conditional[1]              | $sfer->maybeParentheses($c.test, $c)->addText(' ')->foldable()->addText('? ')->subFoldingStart()->maybeParentheses($c.then, $c)->addText(' ')->subFoldingEnd()->foldable()->addText(': ')->subFoldingStart()->maybeParentheses($c.else, $c)->subFoldingEnd(),
+      c:Conditional[1]              | $sfer->maybeParenthesesUnlessStrictlyHigher($c.test, $c)->addText(' ')->foldable()->addText('? ')->subFoldingStart()->maybeParentheses($c.then, $c)->addText(' ')->subFoldingEnd()->foldable()->addText(': ')->subFoldingStart()->maybeParentheses($c.else, $c)->subFoldingEnd(),
       c:InstanceOf[1]               | $sfer->maybeParentheses($c.expression, $c)->addText(' instanceof ')->doType($c.class),
       c:Block[1]                    | $sfer->openBrace()->forEach($c.statements, {s,st| $s->doCode($st)->newLine()})->closeBrace(),
       c:ExpressionStatement[1]      | $sfer->doCode($c.expression)->semicolon()->newLine(),
@@ -635,6 +635,14 @@ function meta::external::language::java::serialization::findProxyUnderlier(code:
 function <<access.private>> meta::external::language::java::serialization::maybeParentheses(sfer:Stringifier[1], code:Code[1], wrt:Code[1]): Stringifier[1]
 {
    if($code->precedence() < $wrt->precedence(),
+      | $sfer->addText('(')->doCode($code)->addText(')'),
+      | $sfer->doCode($code)
+   );
+}
+
+function <<access.private>> meta::external::language::java::serialization::maybeParenthesesUnlessStrictlyHigher(sfer:Stringifier[1], code:Code[1], wrt:Code[1]): Stringifier[1]
+{
+   if($code->precedence() <= $wrt->precedence(),
       | $sfer->addText('(')->doCode($code)->addText(')'),
       | $sfer->doCode($code)
    );

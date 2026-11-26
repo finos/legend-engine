@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::m2m::nestedIfCondition::Src { code: String[0..1]; }
+Class demo::m2m::nestedIfCondition::Out { label: String[0..1]; }
+
+// An if whose condition is itself an if(isEmpty, |false, |test).
+function demo::m2m::nestedIfCondition::label(s: demo::m2m::nestedIfCondition::Src[1]): String[0..1]
+{
+  if(if($s.code->isEmpty(), | false, | $s.code->toOne() == 'A'), | 'yes', | 'no');
+}
+
+// Control (compiles): the same condition written with && instead of a nested if.
+function demo::m2m::nestedIfCondition::labelAnd(s: demo::m2m::nestedIfCondition::Src[1]): String[0..1]
+{
+  if($s.code->isNotEmpty() && ($s.code->toOne() == 'A'), | 'yes', | 'no');
+}
+
+###Mapping
+Mapping demo::m2m::nestedIfCondition::m
+(
+  demo::m2m::nestedIfCondition::Out: Pure
+  {
+    ~src demo::m2m::nestedIfCondition::Src
+    label: demo::m2m::nestedIfCondition::label($src)
+  }
+)
+
+###Mapping
+Mapping demo::m2m::nestedIfCondition::mAnd
+(
+  demo::m2m::nestedIfCondition::Out: Pure
+  {
+    ~src demo::m2m::nestedIfCondition::Src
+    label: demo::m2m::nestedIfCondition::labelAnd($src)
+  }
+)
+
+###Runtime
+Runtime demo::m2m::nestedIfCondition::rt
+{
+  mappings: [ demo::m2m::nestedIfCondition::m ];
+  connections: [ ModelStore: [ c1: #{ JsonModelConnection { class: demo::m2m::nestedIfCondition::Src; url: 'data:application/json,%7B%22code%22%3A%22A%22%7D'; } }# ] ];
+}
+
+###Runtime
+Runtime demo::m2m::nestedIfCondition::rtAnd
+{
+  mappings: [ demo::m2m::nestedIfCondition::mAnd ];
+  connections: [ ModelStore: [ c1: #{ JsonModelConnection { class: demo::m2m::nestedIfCondition::Src; url: 'data:application/json,%7B%22code%22%3A%22A%22%7D'; } }# ] ];
+}
+
+###Service
+Service demo::m2m::nestedIfCondition::svc
+{
+  pattern: '/repro'; owners: [ 'test' ]; documentation: 'Nested if as the condition of an if'; autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {| demo::m2m::nestedIfCondition::Out.all()->graphFetch(#{demo::m2m::nestedIfCondition::Out{label}}#)->serialize(#{demo::m2m::nestedIfCondition::Out{label}}#)->from(demo::m2m::nestedIfCondition::m, demo::m2m::nestedIfCondition::rt)};
+  }
+  testSuites: [ testSuite_1: { data: [] tests: [ test_1: { serializationFormat: PURE; parameters: [ ]
+    asserts: [ a1: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '{"label":"yes"}'; }#; }# ] } ] } ]
+}
+
+###Service
+Service demo::m2m::nestedIfCondition::svcAnd
+{
+  pattern: '/reproAnd'; owners: [ 'test' ]; documentation: 'Control: the same condition written with &&'; autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {| demo::m2m::nestedIfCondition::Out.all()->graphFetch(#{demo::m2m::nestedIfCondition::Out{label}}#)->serialize(#{demo::m2m::nestedIfCondition::Out{label}}#)->from(demo::m2m::nestedIfCondition::mAnd, demo::m2m::nestedIfCondition::rtAnd)};
+  }
+  testSuites: [ testSuite_1: { data: [] tests: [ test_1: { serializationFormat: PURE; parameters: [ ]
+    asserts: [ a1: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '{"label":"yes"}'; }#; }# ] } ] } ]
+}
