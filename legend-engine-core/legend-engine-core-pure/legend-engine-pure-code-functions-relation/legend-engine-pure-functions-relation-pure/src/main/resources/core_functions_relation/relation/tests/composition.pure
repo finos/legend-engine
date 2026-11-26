@@ -1369,20 +1369,20 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   4, B, 40
                   5, C, 50
                   6, A, 60
-                #->extend(~big:x|$x.val > 25)
-                 ->groupBy(~[grp, big], ~s:x|$x.val:y|$y->plus())
-                 ->extend(~lbl:x|if(($x.grp == 'A') && $x.big, |'X', |'O'))
-                 ->sort([~grp->ascending(), ~big->ascending()])
+                #->extend(~band:x|if($x.val > 25, |'high', |'low'))
+                 ->groupBy(~[grp, band], ~s:x|$x.val:y|$y->plus())
+                 ->extend(~lbl:x|if(($x.grp == 'A') && ($x.band == 'high'), |'X', |'O'))
+                 ->sort([~grp->ascending(), ~band->ascending()])
               };
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   grp,big,s,lbl\n'+
-                  '   A,false,30,O\n'+
-                  '   A,true,60,X\n'+
-                  '   B,true,70,O\n'+
-                  '   C,true,50,O\n'+
+                  '   grp,band,s,lbl\n'+
+                  '   A,high,60,X\n'+
+                  '   A,low,30,O\n'+
+                  '   B,high,70,O\n'+
+                  '   C,high,50,O\n'+
                   '#', $res->toString());
 }
 
@@ -1400,17 +1400,17 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   4, B, 40
                   5, C, 50
                   6, A, 60
-                #->extend(~big:x|$x.val > 25)
-                 ->groupBy(~[grp, big], ~s:x|$x.val:y|$y->plus())
-                 ->extend(~lbl:x|if(($x.grp == 'A') && $x.big, |'X', |'O'))
+                #->extend(~band:x|if($x.val > 25, |'high', |'low'))
+                 ->groupBy(~[grp, band], ~s:x|$x.val:y|$y->plus())
+                 ->extend(~lbl:x|if(($x.grp == 'A') && ($x.band == 'high'), |'X', |'O'))
                  ->filter(x|$x.lbl != 'O')
               };
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   grp,big,s,lbl\n'+
-                  '   A,true,60,X\n'+
+                  '   grp,band,s,lbl\n'+
+                  '   A,high,60,X\n'+
                   '#', $res->toString());
 }
 
@@ -1428,9 +1428,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   4, B, 40
                   5, C, 50
                   6, A, 60
-                #->extend(~big:x|$x.val > 25)
-                 ->groupBy(~[grp, big], ~s:x|$x.val:y|$y->plus())
-                 ->extend(~lbl:x|if($x.big, |'B', |'S'))
+                #->extend(~band:x|if($x.val > 25, |'high', |'low'))
+                 ->groupBy(~[grp, band], ~s:x|$x.val:y|$y->plus())
+                 ->extend(~lbl:x|if($x.band == 'high', |'B', |'S'))
                  ->groupBy(~lbl, ~t:x|$x.s:y|$y->plus())
                  ->sort(~lbl->ascending())
               };
