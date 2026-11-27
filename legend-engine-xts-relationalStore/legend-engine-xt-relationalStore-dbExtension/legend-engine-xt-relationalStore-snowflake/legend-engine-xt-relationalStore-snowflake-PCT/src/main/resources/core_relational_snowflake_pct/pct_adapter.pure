@@ -19,6 +19,7 @@ import meta::pure::test::pct::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::snowflake::*;
 
 function <<PCT.adapter>> {PCT.adapterName='Snowflake', PCT.manifestDirectory='/core_relational_snowflake_pct'} meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution<X|o>(f:Function<{->X[o]}>[1]):X[o]
 {
@@ -33,6 +34,15 @@ function <<PCT.adapter>> {PCT.adapterName='Snowflake', PCT.manifestDirectory='/c
 function meta::relational::tests::pct::snowflake::fixtureDDLCommandsTranslator():RelationalDDLCommandsTranslator[1]
 {
   let snowflake = createDbConfig(DatabaseType.Snowflake).ddlCommandsTranslator();
-  // SnowflakeFixtureSchema creates the schema once per run
-  ^$snowflake(createSchema = {sql: CreateSchemaSQL[1], c: DbConfig[1] | []->cast(@String)});
+  ^$snowflake(
+    // SnowflakeFixtureSchema creates the schema once per run
+    createSchema = {sql: CreateSchemaSQL[1], c: DbConfig[1] | []->cast(@String)},
+    // Fixture table names are random so there is never a table to drop first, and a temporary table goes with its session
+    dropTable = {sql: DropTableSQL[1], c: DbConfig[1] | []->cast(@String)},
+    // Every fixture table is loaded, so the table is created there, holding its rows in one statement
+    createTable = {sql: CreateTableSQL[1], c: DbConfig[1] | []->cast(@String)},
+    loadTable = {sql: LoadTableSQL[1], c: DbConfig[1] | if($sql.parsedData.values->isEmpty(),
+                                                         | $snowflake.createTable->toOne()->eval(^CreateTableSQL(table = $sql.table, isTempTable = true), $c),
+                                                         | createTableAsSelectForSnowflake($sql, $c))}
+  );
 }

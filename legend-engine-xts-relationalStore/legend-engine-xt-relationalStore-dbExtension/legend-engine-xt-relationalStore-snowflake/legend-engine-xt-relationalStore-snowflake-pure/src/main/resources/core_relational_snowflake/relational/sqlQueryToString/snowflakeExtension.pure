@@ -257,6 +257,25 @@ function meta::relational::functions::sqlQueryToString::snowflake::insertValuesT
   );
 }
 
+// Creates a temporary table already holding its rows: one statement where a create and an insert take two
+function meta::relational::functions::sqlQueryToString::snowflake::createTableAsSelectForSnowflake(loadTableSQL:LoadTableSQL[1], dbConfig: DbConfig[1]) : String[1]
+{
+  let columns = $loadTableSQL.table.columns->cast(@Column);
+  let loaded = $loadTableSQL.columnsToLoad.name;
+  'CREATE TEMPORARY TABLE ' + $loadTableSQL.table->tableToString($dbConfig) + ' AS\n'
+    + $loadTableSQL.parsedData.values->map(row | 'SELECT ' + $columns->map(c | $c->castRowValueForSnowflake($loaded, $row.values, $dbConfig))->joinStrings(', '))->joinStrings('\nUNION ALL\n')
+    + '\n;';
+}
+
+// The cast fixes each column to its declared type, which a bare literal would not (a null, say, or a whole number meant as a decimal)
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::castRowValueForSnowflake(column:Column[1], loaded:String[*], values:String[*], dbConfig: DbConfig[1]) : String[1]
+{
+  let i = $loaded->indexOf($column.name);
+  let literal = if($i < 0, | 'null', | meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($values->at($i), $column.type));
+  let value = if($column.type->instanceOf(meta::relational::metamodel::datatype::SemiStructured) && $literal != 'null', | 'PARSE_JSON(' + $literal + ')', | $literal);
+  'CAST(' + $value + ' AS ' + $column.type->getColumnTypeSqlTextSnowflake() + ') AS ' + $column.name->processColumnName($dbConfig);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertValuesToCsvForSnowflake(strs : String[*], types : Any[*]): String[1]
 {
   range($types->size())->map(x |
